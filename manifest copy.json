@@ -1,0 +1,18 @@
+{
+	"id": "obsidian-Ziping",
+	"name": "子平排盘",
+	"version": "1.0.6",
+	"minAppVersion": "0.15.0",
+	"description": "子平八字排盘插件",
+	"author": "Sofqi",
+	"authorUrl": "https://github.com/Dyse-Sofqi/obsidian-ziping",
+	"fundingUrl": "https://obsidian.md/pricing",
+	"isDesktopOnly": false,
+	"views": {
+		"paipan-view": {
+			"type": "sidebar",
+			"name": "子平排盘",
+			"icon": "calendar"
+		}
+	}
+}

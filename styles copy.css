@@ -1,0 +1,511 @@
+/* 八字排盘主内容区域样式 */
+.bazi-main-content {
+    width: auto;
+    display: inline-block;
+    margin: 0px;
+    flex-direction: column;
+    align-items: flex-start;
+    /* 顶部对齐（交叉轴） */
+}
+
+/* 按钮容器样式 */
+.bazi-button-container {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.bazi-button-container button {
+    box-shadow: none;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.bazi-button-container button:hover {
+    background-color: var(--background-secondary);
+}
+
+.ziping-flex .ziping-boxShadow-none {
+    box-shadow: none;
+}
+
+.Gan-cList select,
+.Zhi-cList select,
+.ziping-time-selectList {
+    border-radius: 0px;
+}
+
+.bazi-name-gender-row,
+.bazi-time-selectors {
+    display: flex;
+    gap: 0px;
+    margin: 6px 0px 6px 0px;
+    align-items: center;
+}
+
+.ziping-flex .ziping-button-active {
+    background-color: var(--background-secondary);
+    color: var(--interactive-accent);
+}
+
+/* 结果显示容器样式 */
+.bazi-result-container {
+    width: auto;
+    padding: 6px;
+    display: inline-block;
+}
+
+/* 八字排盘表格样式 */
+#bazi-result table {
+    width: min-content;
+    border-collapse: collapse;
+    border: 1px solid #ccc;
+    white-space: nowrap;
+}
+
+/* 八字筛选结果 */
+.bazi-filter-result {
+    flex-direction: column;
+    gap: 1px;
+    margin-top: 5px;
+    padding: 0px 20px;
+    border: transparent solid 1px;
+}
+
+.save-btn-btn,
+.copy-screenshot-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+}
+
+.bazi-time-info p {
+    margin: 5px 0;
+    margin-top: 1px;
+}
+
+/* 干支历 */
+.gzh-text {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.mod-cta {
+    margin-top: 5px;
+}
+
+.dayun-info P {
+    margin: 6px 0;
+}
+
+/* 大运、流年、流月列表容器*/
+.dayun-list, 
+.liunian-list, 
+.liuyue-list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    margin-bottom: 6px;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* 大运、流年、流月按钮 */
+.dayun-list .dayun-btn,
+.liunian-list .liunian-btn, 
+.liuyue-list .liuyue-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 6px;
+    min-width: 41px;
+    height: auto;
+    border: none;
+    background-color: var(--background-primary);
+    line-height: 1.3;
+    border-radius: 0;
+    box-shadow: none !important;
+}
+
+/* 大运按钮内部元素 */
+.dayun-year {
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.dayun-age {
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.dayun-gan,
+.dayun-zhi {
+    font-size: 14px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.liunian-btn:hover,
+.dayun-btn:hover,
+.liuyue-btn:hover {
+    background-color: var(--background-secondary-alt);
+}
+
+/* 第一层：定义基础 Fallback（假设没有任何主题变量） */
+/* 使用 @media 作为兜底，兼容性最好 */
+.dayun-btn.is-selected,
+.liunian-btn.is-selected,
+.liuyue-btn.is-selected {
+    /* 边框：优先使用主题色，没有则用你指定的 #7d5fff */
+    border-color: var(--interactive-accent, #7d5fff);
+    /* 文字：选中态建议加深，同样利用变量回退 */
+    /* color: var(--interactive-accent, #5f4bd4); */
+    font-weight: 500;
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* 第二层：无主题变量时，自动适配系统深色模式 */
+/* 这里的媒体查询会在没有覆盖背景变量时生效 */
+@media (prefers-color-scheme: dark) {
+    .dayun-btn.is-selected,
+    .liunian-btn.is-selected,
+    .liuyue-btn.is-selected {
+        /* 深色下如果不干预会看不见，强制改为白色半透明 */
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* 第三层：如果有主题系统，让主题变量覆盖上面所有设置 */
+/* 假设你的项目中存在 .theme-dark 类或 data-theme 属性 */
+/* 这是一个例子，具体看你们项目的根类名 */
+[data-theme="dark"] .dayun-btn.is-selected,
+[data-theme="dark"] .liunian-btn.is-selected,
+[data-theme="dark"] .liuyue-btn.is-selected {
+    /* 利用主题提供的专用选中背景变量，如果没有则回退到带透明度的强调色 */
+    background-color: var(--button-selected-background, rgba(125, 95, 255, 0.15));
+}
+
+/* 干支历行 - 水平一行展示 */
+.gzh-row {
+    display: flex;
+    gap: 0px;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 5px 0px;
+}
+
+/* 时辰调整按钮 */
+.gzh-row .hour-adjust-btn {
+    padding: 2px 8px;
+    min-width: auto;
+    height: auto;
+    font-size: 12px;
+    background-color: var(--background-secondary);
+    border-radius: 0;
+    box-shadow: none;
+    outline: 1px solid #ccc;
+}
+
+.hour-adjust-btn:hover {
+    color: var(--interactive-normal);
+    background-color: var(--interactive-accent, #e0e0e0);
+}
+
+
+/* 流年按钮内部元素 */
+.liunian-year {
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.liunian-gan,
+.liunian-zhi {
+    font-size: 14px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.liunian-shishen {
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* 流年行样式（用于第四行小运展示） */
+.liunian-row {
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 2px 0;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+/* 流月按钮内部元素 */
+.liuyue-name {
+    font-size: 12px;
+    line-height: 1.2;
+    margin: 0;
+    font-weight: 500;
+}
+
+.liuyue-date {
+    font-size: 10px;
+    line-height: 1.2;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.liuyue-gan,
+.liuyue-zhi {
+    font-size: 14px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.liuyue-shishen {
+    font-size: 11px;
+    line-height: 1.2;
+    margin: 0;
+    opacity: 0.7;
+}
+
+/* 时间调整按钮容器 */
+.time-adjust-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.time-adjust-container input[type="text"],
+.time-adjust-container select {
+    border-radius: 0;
+}
+
+.time-adjust-row {
+    display: flex;
+    justify-content: center;
+}
+
+#bazi-result .bazi-table tr:nth-child(3) td,
+#bazi-result .bazi-table th:nth-child(3) td,
+#bazi-result .bazi-table tr:nth-child(4) td,
+#bazi-result .bazi-table th:nth-child(4) td {
+    padding: 8px 8px;
+}
+
+#bazi-result th,
+#bazi-result td {
+    border: none;
+    padding: 6px 8px;
+    text-align: center;
+    line-height: 1;
+}
+
+/* 表格整体样式（包括表头和单元格） */
+#bazi-result .ziping-table-cell.ziping-border-left {
+    border-left: 1px solid #ccc;
+}
+
+/* 首行标题 */
+#bazi-result th {
+    background-color: transparent;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+}
+
+/* 首列 */
+#bazi-result tr td:first-child {
+    font-weight: bold;
+    background-color: transparent;
+    border-right: 1px solid #ccc;
+}
+
+/* 天干行高亮和字体样式（排除第一列栏首） */
+#bazi-result tr:nth-child(3) td:not(:first-child) {
+    background-color: rgba(0, 0, 0, 0.03);
+    font-weight: 600;
+    font-size: 1.8em;
+    font-family: "汇文正楷", "方正楷体", "华文楷体", "KaiTi", "STKaiti", "楷体", serif;
+    line-height: 1.1;
+}
+
+/* 地支行高亮和字体样式（排除第一列栏首） */
+#bazi-result tr:nth-child(4) td:not(:first-child) {
+    background-color: rgba(0, 0, 0, 0.03);
+    font-weight: 600;
+    font-size: 1.8em;
+    font-family: "汇文正楷", "方正楷体", "华文楷体", "KaiTi", "STKaiti", "楷体", serif;
+    line-height: 1.1;
+}
+
+/* 五行颜色 - 深色主题（默认）*/
+.c-木 {
+    color: #4caf50 !important;
+    font-weight: 600 !important;
+}
+
+.c-火 {
+    color: #f44336 !important;
+    font-weight: 600 !important;
+}
+
+.c-土 {
+    color: #cf7543 !important;
+    font-weight: 600 !important;
+}
+
+.c-金 {
+    color: #ffb74d !important;
+    font-weight: 600 !important;
+}
+
+.c-水 {
+    color: #42a5f5 !important;
+    font-weight: 600 !important;
+}
+
+/* 五行颜色 - 浅色主题 */
+.theme-light .c-木 {
+    color: #2b8a3e !important;
+}
+
+.theme-light .c-火 {
+    color: #c92a2a !important;
+}
+
+.theme-light .c-土 {
+    color: #846358 !important;
+}
+
+.theme-light .c-金 {
+    color: #f08c00 !important;
+}
+
+.theme-light .c-水 {
+    color: #1971c2 !important;
+}
+
+/* 纳音五行颜色 - 稍淡一些 - 深色主题 */
+#bazi-result tr:nth-child(8) .c-木 {
+    color: #81c784 !important;
+}
+
+#bazi-result tr:nth-child(8) .c-火 {
+    color: #e57373 !important;
+}
+
+#bazi-result tr:nth-child(8) .c-土 {
+    color: #ba68c8 !important;
+}
+
+#bazi-result tr:nth-child(8) .c-金 {
+    color: #ffb74d !important;
+}
+
+#bazi-result tr:nth-child(8) .c-水 {
+    color: #64b5f6 !important;
+}
+
+/* 纳音五行颜色 - 浅色主题 */
+.theme-light #bazi-result tr:nth-child(8) .c-木 {
+    color: #4caf50 !important;
+}
+
+.theme-light #bazi-result tr:nth-child(8) .c-火 {
+    color: #ef5350 !important;
+}
+
+.theme-light #bazi-result tr:nth-child(8) .c-土 {
+    color: #ab47bc !important;
+}
+
+.theme-light #bazi-result tr:nth-child(8) .c-金 {
+    color: #ff9800 !important;
+}
+
+.theme-light #bazi-result tr:nth-child(8) .c-水 {
+    color: #2196f3 !important;
+}
+
+/* 1. 基础复选框样式：隐藏原生样式，画成圆角矩形条 */
+.solar-terms-row .ziping-switch-checkbox,
+.tab-content .ziping-switch-checkbox,
+.dayun-info .ziping-switch-checkbox {
+    --webkit-appearance: none !important;
+    /* 移除浏览器默认的复选框样式（小方框）。 */
+    appearance: none !important;
+    /* 设置开关的宽度（整个滑轨的宽度）。 */
+    width: 36px !important;
+    height: 20px !important;
+    background-color: #ccc !important;
+    border-radius: 20px !important;
+    /* 设置相对定位，为内部的绝对定位伪元素（白色圆点）提供参照坐标系。 */
+    position: relative !important;
+    transition: background-color 0.2s;
+    /* 移除点击时默认的焦点外轮廓（蓝色光圈），保持美观。 */
+    outline: none !important;
+    border: none !important;
+}
+
+/* 2. 白色圆点（滑块） */
+.ziping-switch-checkbox::before,
+.tab-content .ziping-switch-checkbox::before,
+.dayun-info .ziping-switch-checkbox::before {
+    /* 伪元素必须有 content 属性才能显示。这里设为空字符串。 */
+    content: "" !important;
+    /* 绝对定位，相对于父元素（.switch）的位置来放置。 */
+    position: absolute !important;
+    width: 16px;
+    height: 16px;
+    border-radius: 50% !important;
+    background-color: white;
+    /* 距离父容器顶部的距离。这里设为 2px，使圆点上下有 2px 空隙，视觉居中（父高 24px，圆点高 20px，上下各 2px）。 */
+    top: 2px;
+    /* 距离父容器左侧的距离，关闭时圆点靠左，留 2px 边距。 */
+    left: 2px;
+    transition: transform 0.2s;
+}
+
+.solar-terms-row .ziping-switch-checkbox:checked:after,
+.tab-content .ziping-switch-checkbox:checked:after,
+.dayun-info .ziping-switch-checkbox:checked:after {
+    content: none !important;
+}
+
+/* 3. 选中（开启）状态：改变背景色 */
+.solar-terms-row .ziping-switch-checkbox:checked,
+.tab-content .ziping-switch-checkbox:checked,
+.dayun-info .ziping-switch-checkbox:checked {
+    background-color: var(--interactive-accent) !important;
+    background-image: none !important;
+}
+
+/* 4. 选中时圆点向右滑动 */
+.solar-terms-row .ziping-switch-checkbox:checked::before,
+.tab-content .ziping-switch-checkbox:checked::before,
+.dayun-info .ziping-switch-checkbox:checked::before {
+    transform: translateX(16px) !important;
+}
+
+.ziping-margin-left-10 {
+    margin-left: 10px;
+}
+
+.ziping-margin-right-10 {
+    margin-right: 10px;
+}
+
+.ziping-margin-left-auto {
+    margin-left: auto;
+}
