@@ -5,25 +5,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { App, Notice, Plugin, WorkspaceLeaf } from 'obsidian';
 
-
-/**
- * 创建一个内嵌版本，不使用外部文件加载
- */
-function ensurePaipanLoaded(): Promise<void> {
-	if (typeof window !== 'undefined' && !window.paipan) {
-		return fetchPaipanContent();
-	}
-	return Promise.resolve();
-}
-
-/**
- * 在构建阶段通过esbuild将paipan.js内容内联到main.js中
- */
-async function fetchPaipanContent(): Promise<void> {
-	// 在构建阶段，esbuild会通过插件将此函数内容替换为paipan.js的实际内容
-	// 运行时这里只是一个占位符
-	return Promise.resolve();
-}
 import { DEFAULT_SETTINGS, ZipingSettings, ZipingSettingTab } from "./settings";
 import { BaziView } from './ui/BaziView-simplified';
 import { PAIPAN_VIEW_TYPE } from './models/types';
@@ -38,10 +19,7 @@ export default class ZipingPlugin extends Plugin {
 	settings: ZipingSettings = DEFAULT_SETTINGS;
 
 
-	async onload() {
-		// 确保 paipan.js 已加载
-		await ensurePaipanLoaded();
-
+async onload() {
 		await this.loadSettings();
 
 		// 初始化样式工具（style-mod替代setCssProps）
