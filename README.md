@@ -51,12 +51,14 @@
 
 ### 安装方法
 
+方法一：社区插件市场安装
+方法二：手动安装（BRAT插件）
 1. 在Obsidian中打开**设置**-**第三方插件**
 2. 禁用安全模式
 3. 打开**社区插件市场**搜索**BRAT**插件
-4. 点击安装并启用**BRAT**插件
+4. 点击安装并启用**BRAT**插件z
 5. 在**BRAT**的插件设置中，Beta plugin list项中，点击add beta plugin
-6. 将仓库地址复制进去：https://github.com/Dyse-Sofqi/obsidian-Ziping
+6. 将仓库地址复制进去：https://github.com/Dyse-Sofqi/ziping
 7. 选择Latest version，add plugin即可
 
 ### 快速开始
