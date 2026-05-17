@@ -1,12 +1,12 @@
 {
-	"id": "ob-ziping-bazi",
+	"id": "obsidian-ziping",
 	"name": "子平排盘",
 	"version": "1.1.5",
 	"minAppVersion": "0.15.0",
 	"description": "子平八字排盘插件",
 	"author": "Sofqi",
 	"authorUrl": "https://github.com/Dyse-Sofqi",
-	"fundingUrl": "https://github.com/Dyse-Sofqi/ob-ziping-bazi/blob/main/zanshang.jpg",
+	"fundingUrl": "https://github.com/Dyse-Sofqi/ziping/blob/main/zanshang.jpg",
 	"isDesktopOnly": false,
 	"views": {
 		"paipan-view": {
