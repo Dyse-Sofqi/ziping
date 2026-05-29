@@ -1,7 +1,7 @@
 {
 	"id": "ziping",
-	"name": "子平",
-	"version": "1.1.9",
+	"name": "Ziping",
+	"version": "1.2.0",
 	"minAppVersion": "0.15.0",
 	"description": "子平八字排盘插件",
 	"author": "Sofqi",
@@ -11,7 +11,7 @@
 	"views": {
 		"paipan-view": {
 			"type": "sidebar",
-			"name": "子平",
+			"name": "Ziping",
 			"icon": "calendar"
 		}
 	}
