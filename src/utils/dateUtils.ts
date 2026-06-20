@@ -11,7 +11,7 @@ export function formatDateTime(date: Date): string {
     const hour = String(date.getHours()).padStart(2, '0');
     const minute = String(date.getMinutes()).padStart(2, '0');
     const second = String(date.getSeconds()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
 
@@ -58,19 +58,19 @@ export function formatToPaiPanCode(year: number, month: number, day: number, hou
  * 解析排盘码为日期和性别信息
  * 格式：YYYY.MM.DD-HH.MM-G
  */
-export function parsePaiPanCode(code: string): { 
-    year: number; 
-    month: number; 
-    day: number; 
-    hour: number; 
-    minute: number; 
+export function parsePaiPanCode(code: string): {
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
     gender: number; // 0: 男, 1: 女
 } | null {
     const codeRegex = /^(\d{4})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})-([XY])$/;
     const match = code.match(codeRegex);
-    
+
     if (!match) return null;
-    
+
     const year = parseInt(match[1]);
     const month = parseInt(match[2]);
     const day = parseInt(match[3]);
@@ -78,7 +78,7 @@ export function parsePaiPanCode(code: string): {
     const minute = parseInt(match[5]);
     const genderCode = match[6];
     const gender = genderCode === 'Y' ? 0 : 1;
-    
+
     return { year, month, day, hour, minute, gender };
 }
 
@@ -97,7 +97,7 @@ export function adjustDateTime(baseDate: Date, hourDelta: number): Date {
 export function isValidDate(year: number, month: number, day: number): boolean {
     if (month < 1 || month > 12) return false;
     if (day < 1 || day > 31) return false;
-    
+
     // 简单的月份天数检查
     const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     // 考虑闰年
@@ -108,7 +108,7 @@ export function isValidDate(year: number, month: number, day: number): boolean {
     } else if (day > daysInMonth[month - 1]) {
         return false;
     }
-    
+
     return true;
 }
 
@@ -135,14 +135,14 @@ export function getMonthRange(): number[] {
  */
 export function getDayRange(year: number, month: number): number[] {
     const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    
+
     // 考虑闰年
     if (month === 2) {
         const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
         const febDays = isLeapYear ? 29 : 28;
         return Array.from({ length: febDays }, (_, i) => i + 1);
     }
-    
+
     const days = daysInMonth[month - 1] || 31;
     return Array.from({ length: days }, (_, i) => i + 1);
 }
@@ -172,7 +172,7 @@ export function getSecondRange(): number[] {
  * 农历月份名称
  */
 export const LUNAR_MONTH_NAMES = [
-    '正月', '二月', '三月', '四月', '五月', '六月', 
+    '正月', '二月', '三月', '四月', '五月', '六月',
     '七月', '八月', '九月', '十月', '冬月', '腊月'
 ];
 

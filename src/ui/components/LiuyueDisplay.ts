@@ -1,8 +1,14 @@
 // 流月显示组件
 import { CurrentBaziData, LiuyueItem } from '../../models/types';
+import { Paipan } from '../../Paipan';
 
 export class LiuyueDisplay {
+    private paipan: Paipan;
     private onLiuyueSelect?: (index: number) => void;
+
+    constructor(paipan: Paipan) {
+        this.paipan = paipan;
+    }
 
     // 设置回调函数
     setCallbacks(onLiuyueSelect?: (index: number) => void) {
@@ -22,7 +28,7 @@ export class LiuyueDisplay {
     // 显示流月信息
     displayLiuyueInfo(container: Element, data: CurrentBaziData) {
         const { liuyue, selectedLiuyueIndex } = data;
-        
+
         if (!liuyue || liuyue.length === 0) {
             const emptyMsg = container.createEl('div');
             emptyMsg.textContent = '暂无流月数据';
@@ -37,7 +43,7 @@ export class LiuyueDisplay {
         liuyue.forEach((item: LiuyueItem, index: number) => {
             const liuyueBtn = liuyueContainer.createEl('button');
             liuyueBtn.addClass('liuyue-btn');
-            
+
             // 设置选中状态
             if (index === (selectedLiuyueIndex || 0)) {
                 liuyueBtn.classList.add('is-selected');
@@ -55,7 +61,7 @@ export class LiuyueDisplay {
 
             // 第三行：天干 + 十神简写（添加五行颜色类）
             const gan = item.gan || item.gz.charAt(0);
-            const ganWuXing = this.getGanWuXing(gan); // 获取天干的五行属性
+            const ganWuXing = this.paipan.getGanWuXing(gan); // 获取天干的五行属性
             const ganShiShen = item.ganShishen || '';
             const ganShiShenShort = this.getShiShenShortFromFull(ganShiShen);
             const ganLine = liuyueBtn.createEl('div');
@@ -68,7 +74,7 @@ export class LiuyueDisplay {
 
             // 第四行：地支 + 十神简写（添加五行颜色类）
             const zhi = item.zhi || (item.gz.charAt(1) || '');
-            const zhiWuXing = this.getZhiWuXing(zhi); // 获取地支的五行属性
+            const zhiWuXing = this.paipan.getZhiWuXing(zhi); // 获取地支的五行属性
             const zhiShiShen = item.zhiShishen || ''; // 使用zhiShishen属性
             const zhiShiShenShort = this.getShiShenShortFromFull(zhiShiShen);
             const zhiLine = liuyueBtn.createEl('div');
@@ -86,23 +92,5 @@ export class LiuyueDisplay {
                 }
             });
         });
-    }
-
-    // 获取天干的五行属性
-    private getGanWuXing(gan: string): string {
-        const ganWuXingMap: Record<string, string> = {
-            '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土', 
-            '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水'
-        };
-        return ganWuXingMap[gan] || '土';
-    }
-
-    // 获取地支的五行属性
-    private getZhiWuXing(zhi: string): string {
-        const zhiWuXingMap: Record<string, string> = {
-            '子': '水', '丑': '土', '寅': '木', '卯': '木', '辰': '土', '巳': '火',
-            '午': '火', '未': '土', '申': '金', '酉': '金', '戌': '土', '亥': '水'
-        };
-        return zhiWuXingMap[zhi] || '土';
     }
 }

@@ -591,7 +591,7 @@ export class TimeSettingModal extends Modal {
         // 年
         const yearSelect = timeRow.createEl('select');
         yearSelect.addClass('ziping-time-selectList');
-        for (let y = 1900; y <= 2100; y++) {
+        for (let y = 1600; y <= 2100; y++) {
             yearSelect.createEl('option', { text: y.toString(), value: y.toString() });
         }
         yearSelect.value = currentYear.toString();

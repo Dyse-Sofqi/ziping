@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { BaziResult, LiuyueItem } from './models/types';
+import { BaziResult, LiuyueItem, SolarTerm, NearbySolarTerms, DayunItem, DayunData, CurrentDayunData } from './models/types';
 
 // 类型定义
 declare global {
@@ -49,48 +49,31 @@ interface DayunItemData {
     zboz?: number;
 }
 
-export interface SolarTerm {
-    name: string;
-    date: Date;
-    jr?: number[];
-    jd?: number;
-    value?: number;
-}
-
-export interface NearbySolarTerms {
-    previous: SolarTerm | null;
-    next: SolarTerm | null;
-    interval: number | null;
-}
-
-export interface DayunItem {
-    age: number;
-    startYear: number;  // 换运年份
-    gan: string;
-    zhi: string;
-    gz: string;
-}
-
-export interface DayunData {
-    startAge: number;
-    dayun: DayunItem[];
-}
-
-export interface CurrentDayunData {
-    startAge: number;
-    currentDayun: DayunItem;
-    liunian: number;
-    allDayun: DayunItem[];
-    qyy_desc?: string;
-    qyy_desc2?: string;
-    renyuanSiling?: string;
-}
-
 export class Paipan {
     private engine: PaipanEngine;
     public J: number;
     public W: number;
     private timeCorrectionEnabled: boolean;
+
+    // 十神查找表：dgs[日干索引][其他干索引] = 十神索引(0-9)，与paipan.js中的dgs数组保持一致
+    private static readonly DGS: number[][] = [
+        [2, 3, 1, 0, 9, 8, 7, 6, 5, 4],  // 甲
+        [3, 2, 0, 1, 8, 9, 6, 7, 4, 5],  // 乙
+        [5, 4, 2, 3, 1, 0, 9, 8, 7, 6],  // 丙
+        [4, 5, 3, 2, 0, 1, 8, 9, 6, 7],  // 丁
+        [7, 6, 5, 4, 2, 3, 1, 0, 9, 8],  // 戊
+        [6, 7, 4, 5, 3, 2, 0, 1, 8, 9],  // 己
+        [9, 8, 7, 6, 5, 4, 2, 3, 1, 0],  // 庚
+        [8, 9, 6, 7, 4, 5, 3, 2, 0, 1],  // 辛
+        [1, 0, 9, 8, 7, 6, 5, 4, 2, 3],  // 壬
+        [0, 1, 8, 9, 6, 7, 4, 5, 3, 2]   // 癸
+    ];
+
+    // 十神简写名称
+    private static readonly SHI_SHEN_SHORT = ['伤', '食', '比', '劫', '印', '枭', '官', '杀', '财', '才'];
+
+    // 十神全称
+    private static readonly SHI_SHEN_FULL = ['伤官', '食神', '比肩', '劫财', '正印', '偏印', '正官', '偏官', '正财', '偏财'];
 
     constructor(timeCorrectionEnabled: boolean = false) {
         this.timeCorrectionEnabled = timeCorrectionEnabled;
@@ -586,9 +569,8 @@ export class Paipan {
             const birthTimestamp = birthDate.getTime();
 
             // 判断大运顺排还是逆排
-            const yangGan = ['甲', '丙', '戊', '庚', '壬'];
-            const isYangGan = yangGan.includes(yearGan);
             const isMale = xb === 0;
+            const isYangGan = this.isYangGan(yearGan);
 
             // 阳年男或阴年女 → 顺排；阴年男或阳年女 → 逆排
             const isForward = (isYangGan && isMale) || (!isYangGan && !isMale);
@@ -616,64 +598,18 @@ export class Paipan {
         };
     }
 
-    // 计算小运 - 男顺女逆
-    // 根据出生年份的干支，男命每年顺推，女命每年逆推
-    getXiaoYunOld(birthYear: number, gender: number, age: number): { gan: string; zhi: string; year: number; age: number } {
-        // 出生年的年干支索引
-        const birthGanIndex = (birthYear - 4) % 10;
-        const birthZhiIndex = (birthYear - 4) % 12;
-
-        // 男顺推，女逆推
-        const direction = (gender === 0) ? 1 : -1; // 0=男，1=女
-
-        // 计算age岁时的年干支
-        const offset = direction * age;
-        const ganIndex = (birthGanIndex + offset) % 10;
-        const zhiIndex = (birthZhiIndex + offset) % 12;
-
-        const adjustedGanIndex = ganIndex < 0 ? ganIndex + 10 : ganIndex;
-        const adjustedZhiIndex = zhiIndex < 0 ? zhiIndex + 12 : zhiIndex;
-
-        const gan = this.engine.ctg[adjustedGanIndex] || '甲';
-        const zhi = this.engine.cdz[adjustedZhiIndex] || '子';
-
-        return {
-            gan,
-            zhi,
-            year: birthYear + offset,
-            age: age
-        };
-    }
-
-    // 计算十神关系 - 使用paipan.js中的dgs查找表
+// 计算十神关系 - 使用paipan.js中的dgs查找表
     getShiShen(dayGan: string, otherGan: string): string {
         const dayIndex = this.engine.ctg.indexOf(dayGan);
         const otherIndex = this.engine.ctg.indexOf(otherGan);
 
         if (dayIndex === -1 || otherIndex === -1) return '';
 
-        // 使用paipan.js中的dgs查找表：dgs[日干索引][其他干索引] = 十神索引(0-9)
-        // 引用paipan.js中的dgs数组
-        const dgs: number[][] = [
-            [2, 3, 1, 0, 9, 8, 7, 6, 5, 4],  // 甲
-            [3, 2, 0, 1, 8, 9, 6, 7, 4, 5],  // 乙
-            [5, 4, 2, 3, 1, 0, 9, 8, 7, 6],  // 丙
-            [4, 5, 3, 2, 0, 1, 8, 9, 6, 7],  // 丁
-            [7, 6, 5, 4, 2, 3, 1, 0, 9, 8],  // 戊
-            [6, 7, 4, 5, 3, 2, 0, 1, 8, 9],  // 己
-            [9, 8, 7, 6, 5, 4, 2, 3, 1, 0],  // 庚
-            [8, 9, 6, 7, 4, 5, 3, 2, 0, 1],  // 辛
-            [1, 0, 9, 8, 7, 6, 5, 4, 2, 3],  // 壬
-            [0, 1, 8, 9, 6, 7, 4, 5, 3, 2]   // 癸
-        ];
-
-        const sss = ['伤', '食', '比', '劫', '印', '枭', '官', '杀', '财', '才'];
-
-        const dayRow = dgs[dayIndex];
+        const dayRow = Paipan.DGS[dayIndex];
         if (!dayRow) return '';
         const shiShenIndex = dayRow[otherIndex];
         if (shiShenIndex === undefined) return '';
-        return sss[shiShenIndex] || '';
+        return Paipan.SHI_SHEN_SHORT[shiShenIndex] || '';
     }
 
     // 获取十神全称
@@ -683,26 +619,11 @@ export class Paipan {
 
         if (dayIndex === -1 || otherIndex === -1) return '';
 
-        const dgs: number[][] = [
-            [2, 3, 1, 0, 9, 8, 7, 6, 5, 4],  // 甲
-            [3, 2, 0, 1, 8, 9, 6, 7, 4, 5],  // 乙
-            [5, 4, 2, 3, 1, 0, 9, 8, 7, 6],  // 丙
-            [4, 5, 3, 2, 0, 1, 8, 9, 6, 7],  // 丁
-            [7, 6, 5, 4, 2, 3, 1, 0, 9, 8],  // 戊
-            [6, 7, 4, 5, 3, 2, 0, 1, 8, 9],  // 己
-            [9, 8, 7, 6, 5, 4, 2, 3, 1, 0],  // 庚
-            [8, 9, 6, 7, 4, 5, 3, 2, 0, 1],  // 辛
-            [1, 0, 9, 8, 7, 6, 5, 4, 2, 3],  // 壬
-            [0, 1, 8, 9, 6, 7, 4, 5, 3, 2]   // 癸
-        ];
-
-        const sssFull = ['伤官', '食神', '比肩', '劫财', '正印', '偏印', '正官', '偏官', '正财', '偏财'];
-
-        const dayRow = dgs[dayIndex];
+        const dayRow = Paipan.DGS[dayIndex];
         if (!dayRow) return '';
         const shiShenIndex = dayRow[otherIndex];
         if (shiShenIndex === undefined) return '';
-        return sssFull[shiShenIndex] || '';
+        return Paipan.SHI_SHEN_FULL[shiShenIndex] || '';
     }
 
     // 地支藏气
@@ -747,26 +668,11 @@ export class Paipan {
         const dayIndex = this.engine.ctg.indexOf(dayGan);
         if (dayIndex === -1) return '';
 
-        const dgs: number[][] = [
-            [2, 3, 1, 0, 9, 8, 7, 6, 5, 4],  // 甲
-            [3, 2, 0, 1, 8, 9, 6, 7, 4, 5],  // 乙
-            [5, 4, 2, 3, 1, 0, 9, 8, 7, 6],  // 丙
-            [4, 5, 3, 2, 0, 1, 8, 9, 6, 7],  // 丁
-            [7, 6, 5, 4, 2, 3, 1, 0, 9, 8],  // 戊
-            [6, 7, 4, 5, 3, 2, 0, 1, 8, 9],  // 己
-            [9, 8, 7, 6, 5, 4, 2, 3, 1, 0],  // 庚
-            [8, 9, 6, 7, 4, 5, 3, 2, 0, 1],  // 辛
-            [1, 0, 9, 8, 7, 6, 5, 4, 2, 3],  // 壬
-            [0, 1, 8, 9, 6, 7, 4, 5, 3, 2]   // 癸
-        ];
-
-        const sss = ['伤', '食', '比', '劫', '印', '枭', '官', '杀', '财', '才'];
-
-        const dayRow = dgs[dayIndex];
+        const dayRow = Paipan.DGS[dayIndex];
         if (!dayRow) return '';
         const shiShenIndex = dayRow[mainCangGanIndex];
         if (shiShenIndex === undefined) return '';
-        return sss[shiShenIndex] || '';
+        return Paipan.SHI_SHEN_SHORT[shiShenIndex] || '';
     }
 
     // 纳音
@@ -840,17 +746,9 @@ export class Paipan {
         const index = gzArray.indexOf(gz);
         if (index === -1) return '';
 
-        // 根据序数判断该柱属于哪一旬，返回对应的空亡地支
-        const xunKongMap: Record<number, string> = {
-            0: '戌亥', 1: '戌亥', 2: '戌亥', 3: '戌亥', 4: '戌亥', 5: '戌亥', 6: '戌亥', 7: '戌亥', 8: '戌亥', 9: '戌亥',
-            10: '申酉', 11: '申酉', 12: '申酉', 13: '申酉', 14: '申酉', 15: '申酉', 16: '申酉', 17: '申酉', 18: '申酉', 19: '申酉',
-            20: '午未', 21: '午未', 22: '午未', 23: '午未', 24: '午未', 25: '午未', 26: '午未', 27: '午未', 28: '午未', 29: '午未',
-            30: '辰巳', 31: '辰巳', 32: '辰巳', 33: '辰巳', 34: '辰巳', 35: '辰巳', 36: '辰巳', 37: '辰巳', 38: '辰巳', 39: '辰巳',
-            40: '寅卯', 41: '寅卯', 42: '寅卯', 43: '寅卯', 44: '寅卯', 45: '寅卯', 46: '寅卯', 47: '寅卯', 48: '寅卯', 49: '寅卯',
-            50: '子丑', 51: '子丑', 52: '子丑', 53: '子丑', 54: '子丑', 55: '子丑', 56: '子丑', 57: '子丑', 58: '子丑', 59: '子丑'
-        };
-
-        return xunKongMap[index] || '';
+        // 以旬为单位查空亡：每10个干支为一旬，对应两个空亡地支
+        const XUN_KONG = ['戌亥', '申酉', '午未', '辰巳', '寅卯', '子丑'];
+        return XUN_KONG[Math.floor(index / 10)] || '';
     }
 
     // 获取天干的五行属性
@@ -878,7 +776,7 @@ export class Paipan {
     }
 
     // 根据年柱干支筛选年份
-    filterYearsByGanZhi(yearGan: string, yearZhi: string, monthZhi: string = '', dayGan: string = '', dayZhi: string = '', startYear: number = 1900, endYear: number = 2060): number[] {
+    filterYearsByGanZhi(yearGan: string, yearZhi: string, monthZhi: string = '', dayGan: string = '', dayZhi: string = '', startYear: number = 1600, endYear: number = 2100): number[] {
         const result: number[] = [];
         for (let year = startYear; year <= endYear; year++) {
             const yearGanZhi = this.getYearGanZhi(year);
@@ -910,7 +808,9 @@ export class Paipan {
                 result.push(year);
             }
         }
-        return result;
+        // 按距离今年的绝对值从小到大排序
+        const currentYear = new Date().getFullYear();
+        return result.sort((a, b) => Math.abs(a - currentYear) - Math.abs(b - currentYear));
     }
 
     // 根据日柱干支筛选年份中的日期

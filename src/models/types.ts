@@ -41,6 +41,9 @@ export interface BaziResult {
 export interface SolarTerm {
     name: string;
     date: Date;
+    jr?: number[];
+    jd?: number;
+    value?: number;
 }
 
 export interface NearbySolarTerms {

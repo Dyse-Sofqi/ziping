@@ -52,7 +52,7 @@ export class BaziView extends ItemView {
         // 初始化UI组件
         this.baziTable = new BaziTable(this.paipan);
         this.dayunDisplay = new DayunDisplay(this.paipan);
-        this.liuyueDisplay = new LiuyueDisplay();
+        this.liuyueDisplay = new LiuyueDisplay(this.paipan);
         this.resultDisplay = new ResultDisplay(this.paipan);
     }
 
@@ -284,19 +284,28 @@ export class BaziView extends ItemView {
     adjustHour(hourDelta: number): void {
         if (!this.currentData) return;
 
-        let newHour = this.currentData.hour + hourDelta;
+        let { year, month, day, hour } = this.currentData;
+        let newHour = hour + hourDelta;
+
         if (newHour < 0) {
             newHour = 23;
+            // 0点→23点：日期回退一天
+            const prev = new Date(year, month - 1, day - 1);
+            year = prev.getFullYear();
+            month = prev.getMonth() + 1;
+            day = prev.getDate();
         } else if (newHour > 23) {
             newHour = 0;
+            // 23点→0点：日期前进一天
+            const next = new Date(year, month - 1, day + 1);
+            year = next.getFullYear();
+            month = next.getMonth() + 1;
+            day = next.getDate();
         }
 
         this.currentData.hour = newHour;
         void this.updateBaziDisplay(
-            this.currentData.year,
-            this.currentData.month,
-            this.currentData.day,
-            newHour,
+            year, month, day, newHour,
             this.currentData.minute,
             this.currentData.second
         );

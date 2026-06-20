@@ -156,23 +156,4 @@ export class ResultDisplay {
         });
     }
 
-    // 获取农历日期信息
-    getLunarDate(year: number, month: number, day: number) {
-        return this.paipan.getLunarDate(year, month, day);
-    }
-
-    // 获取农历日名称
-    getLunarDayName(day: number): string {
-        return this.paipan.getLunarDayName(day);
-    }
-
-    // 获取天干五行
-    getGanWuXing(gan: string): string {
-        return this.paipan.getGanWuXing(gan);
-    }
-
-    // 获取地支五行
-    getZhiWuXing(zhi: string): string {
-        return this.paipan.getZhiWuXing(zhi);
-    }
 }

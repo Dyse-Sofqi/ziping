@@ -273,33 +273,4 @@ export class DayunDisplay {
         }
     }
 
-    // 获取十神关系（简短版）
-    getShiShen(dayGan: string, otherGan: string): string {
-        return this.paipan.getShiShen(dayGan, otherGan);
-    }
-
-    // 根据地支计算十神（根据地支的主气）
-    getZhiShiShen(dayGan: string, zhi: string): string {
-        return this.paipan.getZhiShiShen(dayGan, zhi);
-    }
-
-    // 获取天干的五行属性
-    getGanWuXing(gan: string): string {
-        return this.paipan.getGanWuXing(gan);
-    }
-
-    // 获取地支的五行属性
-    getZhiWuXing(zhi: string): string {
-        return this.paipan.getZhiWuXing(zhi);
-    }
-
-    // 获取小运
-    getXiaoYun(hourGan: string, hourZhi: string, birthYear: number, gender: number, age: number): { gan: string; zhi: string } {
-        return this.paipan.getXiaoYun(hourGan, hourZhi, birthYear, gender, age);
-    }
-
-    // 获取年份的干支
-    getYearGanZhi(year: number): { gan: string, zhi: string } {
-        return this.paipan.getYearGanZhi(year);
-    }
 }
