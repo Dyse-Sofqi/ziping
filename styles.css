@@ -564,3 +564,10 @@
 .ziping-bazi-block {
     display: block;
 }
+
+/* 代码块外层容器自适应宽度 */
+.ziping-embed-block-align {
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 100%;
+}

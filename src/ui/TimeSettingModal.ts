@@ -1,7 +1,7 @@
 // 时间设置模态框组件
 import { Modal, App, Notice } from 'obsidian';
 import { BaziView } from './BaziView';
-import { CITIES, PROVINCE_CITY_DISTRICT_GROUPS } from '../settings';
+import { PROVINCE_CITY_DISTRICT_GROUPS } from '../settings';
 import { findLocationInGroups } from '../utils/locationUtils';
 
 export class TimeSettingModal extends Modal {
@@ -693,7 +693,6 @@ export class TimeSettingModal extends Modal {
         const ganList = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
         const zhiList = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
         const yangGan = ['甲', '丙', '戊', '庚', '壬'];
-        const yinGan = ['乙', '丁', '己', '辛', '癸'];
         const yangZhi = ['子', '寅', '辰', '午', '申', '戌'];
         const yinZhi = ['丑', '卯', '巳', '未', '酉', '亥'];
 

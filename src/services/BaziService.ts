@@ -1,12 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 // 兼容 Obsidian 插件环境下 process 可能未定义的类型声明
 declare const process: Partial<{ env: { NODE_ENV?: string } }>;
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // 八字计算和显示服务
 import { Paipan } from '../Paipan';
-import { CurrentBaziData, BaziResult, CurrentDayunData, NearbySolarTerms, DayunItem, LiuyueItem } from '../models/types';
+import { CurrentBaziData, CurrentDayunData, NearbySolarTerms, DayunItem, LiuyueItem } from '../models/types';
 
 export class BaziService {
     private paipan: Paipan;
@@ -91,7 +87,8 @@ export class BaziService {
                 if (liuyue.length > 0) {
                     try {
                         selectedLiuyueIndex = this.calculateCurrentLiuyueIndex(liuyue);
-                    } catch (error) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- catch binding intentionally unused
+                    } catch (_) {
                         selectedLiuyueIndex = 0;
                     }
                 }
@@ -185,7 +182,7 @@ export class BaziService {
     }
 
     // 获取精确的节气时间
-    private getExactJieqiTime(year: number, jieqiName: string, solarTermsResult: any): Date | null {
+    private getExactJieqiTime(year: number, jieqiName: string, solarTermsResult: unknown): Date | null {
         try {
             // 使用Paipan类中已有的节气计算方法
             if (!this.paipan) { console.error('排盘对象未初始化'); return null; }
@@ -221,7 +218,7 @@ export class BaziService {
     }
 
     // 根据选中信息计算流年
-    private calculateLiunianYear(birthYear: number, selectedDayunIndex: number, selectedLiunianIndex: number, allDayun: any[]): number {
+    private calculateLiunianYear(birthYear: number, selectedDayunIndex: number, selectedLiunianIndex: number, allDayun: DayunItem[]): number {
         // 小运模式：直接使用出生年份加偏移
         if (selectedDayunIndex === -1) {
             return birthYear + selectedLiunianIndex;
@@ -323,4 +320,5 @@ export class BaziService {
         }
         return [];
     }
+
 }

@@ -1,7 +1,7 @@
 // Markdown 代码块渲染器
 // 处理 ```ziping 代码块，复刻侧边栏排盘视图的完整渲染，支持交互切换
 // 使用 Shadow DOM 完全隔离主题样式渗透
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// IdentificationService constructor requires App type, but code block renderer has no App access
 import { MarkdownPostProcessorContext } from 'obsidian';
 import { Paipan } from '../Paipan';
 import { BaziService } from '../services/BaziService';
@@ -22,8 +22,8 @@ export class ZipingCodeBlockRenderer {
     constructor() {
         this.paipan = new Paipan(false);
         this.baziService = new BaziService(this.paipan);
-        this.identificationService = new IdentificationService(
-            null as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- null is passed as App for code block renderer which has no App access
+        this.identificationService = new IdentificationService(null as any,
             this.paipan,
             this.baziService
         );
@@ -66,12 +66,10 @@ export class ZipingCodeBlockRenderer {
 
     private renderSingleBazi(container: HTMLElement, baziData: CurrentBaziData): void {
         // 让外层 .cm-preview-code-block 自适应内容宽度
-        // 注意：阅读视图用 flex 布局，flex 子项默认 stretch，需 align-self 配合
+        // 阅读视图用 flex 布局，flex 子项默认 stretch，需 align-self 配合
         const embedBlock = container.parentElement;
         if (embedBlock) {
-            embedBlock.style.alignSelf = 'flex-start';
-            embedBlock.style.width = 'fit-content';
-            embedBlock.style.maxWidth = '100%';
+            embedBlock.addClass('ziping-embed-block-align');
         }
 
         // 宿主元素（light-DOM 可见，用于定位）
@@ -82,6 +80,7 @@ export class ZipingCodeBlockRenderer {
         const shadow = host.attachShadow({ mode: 'closed' });
 
         // 注入插件 CSS（包含所有 .bazi-result-container 规则 + :host-context 主题适配）
+        // eslint-disable-next-line -- Shadow DOM requires dynamic CSS injection; styles.css cannot penetrate shadow boundary
         const styleEl = document.createElement('style');
         styleEl.textContent = SHADOW_BAZI_CSS;
         shadow.appendChild(styleEl);

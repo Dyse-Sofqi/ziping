@@ -96,14 +96,12 @@ export class ResultDisplay {
         hourZhiSpan.addClass('c-' + this.paipan.getZhiWuXing(data.bazi.dz[3] || ''));
         gzhSpan.appendText('时');
 
-        // 时辰调整按钮
-        const hourMinusBtn = gzhRow.createEl('button', { text: '时↑' });
-        hourMinusBtn.addClass('hour-adjust-btn');
-        const hourPlusBtn = gzhRow.createEl('button', { text: '时↓' });
-        hourPlusBtn.addClass('hour-adjust-btn');
-
-        // 绑定按钮事件
+        // 时辰调整按钮（仅当回调被设置时显示，侧边栏可用，代码块视图没有此回调因此不渲染）
         if (this.onTimeAdjust) {
+            const hourMinusBtn = gzhRow.createEl('button', { text: '时↑' });
+            hourMinusBtn.addClass('hour-adjust-btn');
+            const hourPlusBtn = gzhRow.createEl('button', { text: '时↓' });
+            hourPlusBtn.addClass('hour-adjust-btn');
             hourMinusBtn.addEventListener('click', () => this.onTimeAdjust!(-1));
             hourPlusBtn.addEventListener('click', () => this.onTimeAdjust!(1));
         }

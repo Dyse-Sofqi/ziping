@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 // 数据服务 - 处理数据持久化和地理位置查找
 // 从BaziView.ts中提取的数据保存和地理位置功能
 import { App, Notice } from 'obsidian';
 import { Paipan } from '../Paipan';
+import type ZipingPlugin from '../main';
 import { CurrentBaziData } from '../models/types';
 import { findLocationInGroups } from '../utils/locationUtils';
 
@@ -18,9 +15,9 @@ export interface CaseData {
 export class DataService {
     private app: App;
     private paipan: Paipan;
-    private plugin: any; // 引用主插件实例，用于访问保存方法
+    private plugin: ZipingPlugin; // 引用主插件实例，用于访问保存方法
 
-    constructor(app: App, paipan: Paipan, plugin: any) {
+    constructor(app: App, paipan: Paipan, plugin: ZipingPlugin) {
         this.app = app;
         this.paipan = paipan;
         this.plugin = plugin;
@@ -40,4 +37,5 @@ export class DataService {
     findLocationInGroups(districtName: string, cityName: string, provinceName: string): { longitude: number; latitude: number; } | null {
         return findLocationInGroups(districtName, cityName, provinceName);
     }
+
 }

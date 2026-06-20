@@ -1,5 +1,5 @@
 // 地理位置工具函数
-import { CITIES, PROVINCE_CITY_GROUPS, PROVINCE_CITY_DISTRICT_GROUPS } from '../settings';
+import { CITIES, PROVINCE_CITY_DISTRICT_GROUPS } from '../settings';
 
 /**
  * 根据区县名称查找完整的地理信息数据

@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { App, Notice, Plugin, WorkspaceLeaf } from 'obsidian';
+/* eslint-disable @typescript-eslint/no-unsafe-call -- paipan.js / BaziService methods are untyped */
+/* eslint-disable @typescript-eslint/no-unsafe-argument -- paipan.js data flows through untyped paths */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access -- paipan.js data objects accessed dynamically */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment -- paipan.js returns untyped data */
+import { Notice, Plugin } from 'obsidian';
 
 import { DEFAULT_SETTINGS, ZipingSettings, ZipingSettingTab } from "./settings";
 import { BaziView } from './ui/BaziView';
@@ -40,13 +39,13 @@ export default class ZipingPlugin extends Plugin {
 				id: 'open-paipan-view',
 				name: '打开排盘',
 				callback: () => {
-					this.activateView();
+					void this.activateView();
 				}
 			});
 
 			// 添加侧边栏排盘图标
 			this.addRibbonIcon('dna', '子平排盘', () => {
-				this.activateView();
+				void this.activateView();
 			});
 
 			// 添加设置标签页
@@ -56,7 +55,7 @@ export default class ZipingPlugin extends Plugin {
 			this.app.workspace.onLayoutReady(() => {
 				// 如果不存在八字排盘视图，则在右侧侧边栏打开它
 				if (this.app.workspace.getLeavesOfType(PAIPAN_VIEW_TYPE).length === 0) {
-					this.activateView();
+					void this.activateView();
 				}
 			});
 		}
@@ -72,7 +71,7 @@ export default class ZipingPlugin extends Plugin {
 			if (leaves.length > 0) {
 				const leaf = leaves[0];
 				if (leaf) {
-					workspace.revealLeaf(leaf);
+					void workspace.revealLeaf(leaf);
 					// 刷新数据
 					const view = leaf.view as BaziView;
 					if (view && view.loadCurrentTime) {
@@ -95,6 +94,7 @@ export default class ZipingPlugin extends Plugin {
 			await this.saveData(this.settings);
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped bazi data structure
 		async saveBaziToFile(title: string, data: any) {
 			const basePath = this.settings.casePath || '命例';
 
@@ -137,6 +137,7 @@ export default class ZipingPlugin extends Plugin {
 			}
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped bazi data structure
 		private formatBaziToMarkdown(title: string, data: any): string {
 			const lines: string[] = [];
 
@@ -196,7 +197,7 @@ export default class ZipingPlugin extends Plugin {
 			lines.push(`${data.bazi.dz[0]}${data.bazi.dz[1]}${data.bazi.dz[2]}${data.bazi.dz[3]}`);
 
 			// 8. 展示九部大运干支
-			const dayunItems = data.dayun.allDayun.slice(0, 9) as any[];
+			const dayunItems = data.dayun.allDayun.slice(0, 9);
 
 			lines.push('');
 			// 9. 生成大运列表，每行展示一个大运的起始年份和干支和岁数，并添加其下的所有流年
@@ -241,7 +242,9 @@ export default class ZipingPlugin extends Plugin {
 		 * @param birthYear 出生年份
 		 * @returns 流年数组
 		 */
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- mixed-type stream-year items
 		private calculateLiunianForDayun(dayun: any, birthYear: number): any[] {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- mixed-type items
 			const liunianItems: any[] = [];
 			const paipan = new Paipan();
 
@@ -263,3 +266,8 @@ export default class ZipingPlugin extends Plugin {
 			return liunianItems;
 		}
 	}
+
+/* eslint-enable @typescript-eslint/no-unsafe-call */
+/* eslint-enable @typescript-eslint/no-unsafe-argument */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

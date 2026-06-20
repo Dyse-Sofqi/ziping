@@ -1,15 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { BaziResult, LiuyueItem, SolarTerm, NearbySolarTerms, DayunItem, DayunData, CurrentDayunData } from './models/types';
+/* eslint-disable @typescript-eslint/no-unsafe-argument -- paipan.js engine returns dynamic types */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access -- paipan.js engine dynamic property access */
+/* eslint-disable @typescript-eslint/no-unsafe-call -- paipan.js engine methods are untyped */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment -- paipan.js engine returns untyped data */
+import { BaziResult, LiuyueItem, SolarTerm, NearbySolarTerms, DayunItem, CurrentDayunData } from './models/types';
 
 // 类型定义
 declare global {
     interface Window {
         p: PaipanEngine;
-        paipan: any; // paipan 构造函数
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- paipan.js constructor is untyped
+        paipan: any;
     }
 }
 
@@ -20,14 +20,14 @@ interface PaipanEngine {
     Jtime(jd: number): [number, number, number, number, number, number];
     fatemaps(xb: number, yy: number, mm: number, dd: number, hh: number, mt: number, ss: number, J?: number, W?: number): PaipanResult;
     GetAdjustedJQ(yy: number, adjust: boolean): number[];
-    Solar2Lunar(yy: number, mm: number, dd: number): any[];
+    Solar2Lunar(yy: number, mm: number, dd: number): unknown[];
     dxd: string[];
     ctg: string[];
     cdz: string[];
     calculateQiyunSimplified?: (birthTimestamp: number, solarTermTimestamp: number, xb: number, yearGan: string) => { years: number; months: number; days: number; description: string };
     calculateRenyuanSiling?: (birthTimestamp: number, solarTermTimestamp: number, ord: number) => string;
     dateTimeToTimestamp?: (year: number, month: number, day: number, hour: number, minute: number, second: number) => number;
-    calculateLiuyue?: (baziResult: any, liunianYear: number) => LiuyueItem[];
+    calculateLiuyue?: (baziResult: unknown, liunianYear: number) => LiuyueItem[];
 }
 
 interface PaipanResult {
@@ -40,6 +40,7 @@ interface PaipanResult {
     pty?: number;
     qyy_desc?: string;
     qyy_desc2?: string;
+    renyuanSiling?: string;
 }
 
 interface DayunItemData {
@@ -222,7 +223,7 @@ export class Paipan {
         };
     }
 
-    getCurrentDayun(birthYear: number, birthMonth: number, birthDay: number, gender: number, birthHour?: number, birthMinute?: number, birthSecond?: number, existingResult?: any): CurrentDayunData {
+    getCurrentDayun(birthYear: number, birthMonth: number, birthDay: number, gender: number, birthHour?: number, birthMinute?: number, birthSecond?: number, existingResult?: PaipanResult): CurrentDayunData {
         // 使用用户提供的出生时间参数，如果未提供则使用合理默认值
         const hour = birthHour !== undefined && birthHour >= 0 && birthHour <= 23 ? birthHour : 12;
         const minute = birthMinute !== undefined && birthMinute >= 0 && birthMinute <= 59 ? birthMinute : 30;
@@ -234,7 +235,7 @@ export class Paipan {
             throw new Error('大运调用失败: 未获取 dy 数据');
         }
 
-        const allDayun: DayunItem[] = rt.dy.slice(0, 9).map((item: any) => ({
+        const allDayun: DayunItem[] = rt.dy.slice(0, 9).map((item: DayunItemData) => ({
             age: item.zqage,
             startYear: birthYear + item.zqage,  // 换运年份 = 出生年份 + 起始岁数
             gan: item.zfma,
@@ -247,7 +248,7 @@ export class Paipan {
         let currentDayun = allDayun[0];
 
         for (let i = 0; i < rt.dy.length; i++) {
-            const item: any = rt.dy[i];
+            const item: DayunItemData = rt.dy[i];
             if (item && typeof item.zqage === 'number' && typeof item.zboz === 'number') {
                 if (age >= item.zqage && age <= item.zboz) {
                     currentDayun = {
@@ -309,6 +310,7 @@ export class Paipan {
     lunarToSolar(yy: number, mm: number, dd: number, isLeap: boolean): { year: number; month: number; day: number } | null {
         try {
             // 调用paipan.js中的Lunar2Solar方法
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- paipan.js engine has Lunar2Solar not in interface
             const result = (this.engine as any).Lunar2Solar(yy, mm, dd, isLeap);
             if (!result || !Array.isArray(result) || result.length < 3) { return null; }
             const year = Number(result[0]);
@@ -326,6 +328,7 @@ export class Paipan {
     getLeapMonth(year: number): number {
         try {
             // 调用paipan.js中的GetZQandSMandLunarMonthCode方法获取月份代码
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- paipan.js engine method not in interface
             const [mc] = (this.engine as any).GetZQandSMandLunarMonthCode(year);
             if (!mc || !Array.isArray(mc)) {
                 return 0;
@@ -897,7 +900,7 @@ export class Paipan {
     }
 
     // 计算流月
-    calculateLiuyue(baziResult: any, liunianYear: number): LiuyueItem[] {
+    calculateLiuyue(baziResult: unknown, liunianYear: number): LiuyueItem[] {
         return this.engine.calculateLiuyue?.(baziResult, liunianYear) || [];
     }
 
@@ -1130,3 +1133,7 @@ export class Paipan {
         }
     }
 }
+/* eslint-enable @typescript-eslint/no-unsafe-argument */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */
+/* eslint-enable @typescript-eslint/no-unsafe-call */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
