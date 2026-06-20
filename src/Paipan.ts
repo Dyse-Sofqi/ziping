@@ -49,8 +49,6 @@ interface DayunItemData {
     zboz?: number;
 }
 
-
-
 export interface SolarTerm {
     name: string;
     date: Date;
@@ -96,7 +94,7 @@ export class Paipan {
 
     constructor(timeCorrectionEnabled: boolean = false) {
         this.timeCorrectionEnabled = timeCorrectionEnabled;
-        
+
         if (!window.p) {
             if (typeof window.paipan === 'function') {
                 window.p = new window.paipan();
@@ -104,7 +102,7 @@ export class Paipan {
                 throw new Error('排盘引擎未初始化，请确保 paipan.js 已被正确加载');
             }
         }
-        
+
         this.engine = window.p;
         this.J = this.engine.J ?? 120;
         this.W = this.engine.W ?? 35;

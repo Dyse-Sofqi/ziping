@@ -6,7 +6,7 @@
 import { App, Notice, Plugin, WorkspaceLeaf } from 'obsidian';
 
 import { DEFAULT_SETTINGS, ZipingSettings, ZipingSettingTab } from "./settings";
-import { BaziView } from './ui/BaziView-simplified';
+import { BaziView } from './ui/BaziView';
 import { PAIPAN_VIEW_TYPE } from './models/types';
 import { Paipan } from './Paipan';
 import { initializeStyleUtils } from './utils/styleUtils';
@@ -38,7 +38,7 @@ async onload() {
 		});
 
 		// 添加侧边栏排盘图标
-		this.addRibbonIcon('calendar', '子平排盘', () => {
+		this.addRibbonIcon('dna', '子平排盘', () => {
 			this.activateView();
 		});
 

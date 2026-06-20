@@ -29125,7 +29125,7 @@ var ZipingSettingTab = class extends import_obsidian.PluginSettingTab {
   }
 };
 
-// src/ui/BaziView-simplified.ts
+// src/ui/BaziView.ts
 var import_obsidian5 = require("obsidian");
 
 // node_modules/modern-screenshot/dist/index.mjs
@@ -33772,7 +33772,7 @@ var ResultDisplay = class {
   }
 };
 
-// src/ui/BaziView-simplified.ts
+// src/ui/BaziView.ts
 var PAIPAN_VIEW_TYPE = "paipan-view";
 var BaziView = class extends import_obsidian5.ItemView {
   constructor(leaf, plugin) {
@@ -33804,7 +33804,7 @@ var BaziView = class extends import_obsidian5.ItemView {
     return "\u5B50\u5E73\u6392\u76D8";
   }
   getIcon() {
-    return "calendar";
+    return "dna";
   }
   async onOpen() {
     this.renderContent();
@@ -34405,7 +34405,7 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
         this.activateView();
       }
     });
-    this.addRibbonIcon("calendar", "\u5B50\u5E73\u6392\u76D8", () => {
+    this.addRibbonIcon("dna", "\u5B50\u5E73\u6392\u76D8", () => {
       this.activateView();
     });
     this.addSettingTab(new ZipingSettingTab(this.app, this));

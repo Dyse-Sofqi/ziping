@@ -1,6 +1,6 @@
 // 时间设置模态框组件
 import { Modal, App, Notice } from 'obsidian';
-import { BaziView } from './BaziView-simplified';
+import { BaziView } from './BaziView';
 import { CITIES, PROVINCE_CITY_DISTRICT_GROUPS } from '../settings';
 import { findLocationInGroups } from '../utils/locationUtils';
 

@@ -270,8 +270,6 @@ export class ZipingSettingTab extends PluginSettingTab {
 			.setHeading()
 			.setName('Paipan calendar settings');
 
-
-
 		new Setting(containerEl)
 			.setName('Case save path')
 			.setDesc('案例保存路径 (默认: 命例)')
