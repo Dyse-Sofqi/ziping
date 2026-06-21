@@ -1,8 +1,8 @@
 {
 	"id": "ziping",
 	"name": "Ziping",
-	"version": "1.2.3",
-	"minAppVersion": "0.16.0",
+	"version": "1.2.4",
+	"minAppVersion": "1.1.0",
 	"description": "子平八字排盘插件",
 	"author": "Sofqi",
 	"authorUrl": "https://github.com/Dyse-Sofqi",

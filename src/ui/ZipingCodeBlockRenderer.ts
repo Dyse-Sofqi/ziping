@@ -22,8 +22,8 @@ export class ZipingCodeBlockRenderer {
     constructor() {
         this.paipan = new Paipan(false);
         this.baziService = new BaziService(this.paipan);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- null is passed as App for code block renderer which has no App access
-        this.identificationService = new IdentificationService(null as any,
+        // null is passed as App for code block renderer which has no App access
+        this.identificationService = new IdentificationService(null,
             this.paipan,
             this.baziService
         );
@@ -80,7 +80,7 @@ export class ZipingCodeBlockRenderer {
         const shadow = host.attachShadow({ mode: 'closed' });
 
         // 注入插件 CSS（包含所有 .bazi-result-container 规则 + :host-context 主题适配）
-        // eslint-disable-next-line -- Shadow DOM requires dynamic CSS injection; styles.css cannot penetrate shadow boundary
+        // eslint-disable-next-line no-restricted-globals -- Shadow DOM requires dynamic CSS injection; styles.css cannot penetrate shadow boundary
         const styleEl = document.createElement('style');
         styleEl.textContent = SHADOW_BAZI_CSS;
         shadow.appendChild(styleEl);

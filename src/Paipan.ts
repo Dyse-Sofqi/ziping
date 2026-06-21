@@ -5,11 +5,14 @@
 import { BaziResult, LiuyueItem, SolarTerm, NearbySolarTerms, DayunItem, CurrentDayunData } from './models/types';
 
 // 类型定义
+interface PaipanConstructor {
+    new (): PaipanEngine;
+}
+
 declare global {
     interface Window {
         p: PaipanEngine;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- paipan.js constructor is untyped
-        paipan: any;
+        paipan: PaipanConstructor;
     }
 }
 
@@ -28,6 +31,8 @@ interface PaipanEngine {
     calculateRenyuanSiling?: (birthTimestamp: number, solarTermTimestamp: number, ord: number) => string;
     dateTimeToTimestamp?: (year: number, month: number, day: number, hour: number, minute: number, second: number) => number;
     calculateLiuyue?: (baziResult: unknown, liunianYear: number) => LiuyueItem[];
+    Lunar2Solar(yy: number, mm: number, dd: number, isLeap: boolean): unknown[];
+    GetZQandSMandLunarMonthCode(year: number): [number[], ...unknown[]];
 }
 
 interface PaipanResult {
@@ -310,8 +315,7 @@ export class Paipan {
     lunarToSolar(yy: number, mm: number, dd: number, isLeap: boolean): { year: number; month: number; day: number } | null {
         try {
             // 调用paipan.js中的Lunar2Solar方法
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- paipan.js engine has Lunar2Solar not in interface
-            const result = (this.engine as any).Lunar2Solar(yy, mm, dd, isLeap);
+            const result = this.engine.Lunar2Solar(yy, mm, dd, isLeap);
             if (!result || !Array.isArray(result) || result.length < 3) { return null; }
             const year = Number(result[0]);
             const month = Number(result[1]);
@@ -328,8 +332,7 @@ export class Paipan {
     getLeapMonth(year: number): number {
         try {
             // 调用paipan.js中的GetZQandSMandLunarMonthCode方法获取月份代码
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- paipan.js engine method not in interface
-            const [mc] = (this.engine as any).GetZQandSMandLunarMonthCode(year);
+            const [mc] = this.engine.GetZQandSMandLunarMonthCode(year);
             if (!mc || !Array.isArray(mc)) {
                 return 0;
             }
@@ -1133,7 +1136,7 @@ export class Paipan {
         }
     }
 }
-/* eslint-enable @typescript-eslint/no-unsafe-argument */
-/* eslint-enable @typescript-eslint/no-unsafe-member-access */
-/* eslint-enable @typescript-eslint/no-unsafe-call */
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+/* eslint-enable @typescript-eslint/no-unsafe-argument -- end paipan.js dynamic type section */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access -- end paipan.js dynamic type section */
+/* eslint-enable @typescript-eslint/no-unsafe-call -- end paipan.js dynamic type section */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment -- end paipan.js dynamic type section */

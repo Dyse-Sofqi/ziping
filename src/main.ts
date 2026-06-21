@@ -6,7 +6,7 @@ import { Notice, Plugin } from 'obsidian';
 
 import { DEFAULT_SETTINGS, ZipingSettings, ZipingSettingTab } from "./settings";
 import { BaziView } from './ui/BaziView';
-import { PAIPAN_VIEW_TYPE } from './models/types';
+import { PAIPAN_VIEW_TYPE, CurrentBaziData, DayunItem, LiunianItem } from './models/types';
 import { Paipan } from './Paipan';
 import { initializeStyleUtils } from './utils/styleUtils';
 
@@ -94,8 +94,7 @@ export default class ZipingPlugin extends Plugin {
 			await this.saveData(this.settings);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped bazi data structure
-		async saveBaziToFile(title: string, data: any) {
+		async saveBaziToFile(title: string, data: CurrentBaziData) {
 			const basePath = this.settings.casePath || '命例';
 
 			// 根据校时状态选择正确的时间来计算排盘码
@@ -137,8 +136,7 @@ export default class ZipingPlugin extends Plugin {
 			}
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped bazi data structure
-		private formatBaziToMarkdown(title: string, data: any): string {
+		private formatBaziToMarkdown(title: string, data: CurrentBaziData): string {
 			const lines: string[] = [];
 
 			// 1. 生成 YAML Frontmatter 格式数据
@@ -242,10 +240,8 @@ export default class ZipingPlugin extends Plugin {
 		 * @param birthYear 出生年份
 		 * @returns 流年数组
 		 */
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- mixed-type stream-year items
-		private calculateLiunianForDayun(dayun: any, birthYear: number): any[] {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- mixed-type items
-			const liunianItems: any[] = [];
+		private calculateLiunianForDayun(dayun: DayunItem, birthYear: number): LiunianItem[] {
+			const liunianItems: LiunianItem[] = [];
 			const paipan = new Paipan();
 
 			// 每个大运持续10年，计算其下的所有流年
@@ -267,7 +263,7 @@ export default class ZipingPlugin extends Plugin {
 		}
 	}
 
-/* eslint-enable @typescript-eslint/no-unsafe-call */
-/* eslint-enable @typescript-eslint/no-unsafe-argument */
-/* eslint-enable @typescript-eslint/no-unsafe-member-access */
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+/* eslint-enable @typescript-eslint/no-unsafe-call -- end paipan.js dynamic type section */
+/* eslint-enable @typescript-eslint/no-unsafe-argument -- end paipan.js dynamic type section */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access -- end paipan.js dynamic type section */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment -- end paipan.js dynamic type section */

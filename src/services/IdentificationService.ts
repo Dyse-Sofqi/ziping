@@ -71,12 +71,12 @@ class PaiPanSelectionModal extends Modal {
 }
 
 export class IdentificationService {
-    private app: App;
+    private app: App | null;
     private paipan: Paipan;
     private baziService: BaziService;
     private onCodeIdentified?: (code: string, name: string) => void;
 
-    constructor(app: App, paipan: Paipan, baziService: BaziService) {
+    constructor(app: App | null, paipan: Paipan, baziService: BaziService) {
         this.app = app;
         this.paipan = paipan;
         this.baziService = baziService;
@@ -89,6 +89,10 @@ export class IdentificationService {
 
     // 识别排盘码
     async identifyPaiPanCodes(): Promise<void> {
+        if (!this.app) {
+            new Notice('无法识别排盘码：应用实例不可用');
+            return;
+        }
         const activeFile = this.app.workspace.getActiveFile();
         if (!activeFile) {
             new Notice('请先打开一个笔记文档');
