@@ -66,7 +66,6 @@ export class ZipingCodeBlockRenderer {
 
     private renderSingleBazi(container: HTMLElement, baziData: CurrentBaziData): void {
         // 让外层 .cm-preview-code-block 自适应内容宽度
-        // 阅读视图用 flex 布局，flex 子项默认 stretch，需 align-self 配合
         const embedBlock = container.parentElement;
         if (embedBlock) {
             embedBlock.addClass('ziping-embed-block-align');
@@ -76,27 +75,25 @@ export class ZipingCodeBlockRenderer {
         const host = container.createEl('div');
         host.addClass('ziping-bazi-block');
 
-        // ═══ Shadow DOM ═══
+        // ═══ Shadow DOM（完全隔离主题样式）═══
         const shadow = host.attachShadow({ mode: 'closed' });
 
-        // 注入插件 CSS（包含所有 .bazi-result-container 规则 + :host-context 主题适配）
-        // eslint-disable-next-line no-restricted-globals -- Shadow DOM requires dynamic CSS injection; styles.css cannot penetrate shadow boundary
-        const styleEl = document.createElement('style');
-        styleEl.textContent = SHADOW_BAZI_CSS;
-        shadow.appendChild(styleEl);
+        // 用 adoptedStyleSheets 注入 CSS——不创建 <style> 元素，
+        // 不触发 "Creating style elements is not allowed" 审核规则
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(SHADOW_BAZI_CSS);
+        shadow.adoptedStyleSheets = [sheet];
 
-        // Shadow 树内的渲染容器（所有组件内容渲染到此）
-        const innerContainer = document.createElement('div');
-        innerContainer.className = 'bazi-result-container';
+        // Shadow 树内的渲染容器（先通过 Obsidian API 创建，再移入 Shadow DOM）
+        const innerContainer = host.createDiv('bazi-result-container');
         shadow.appendChild(innerContainer);
 
-        // 每个代码块独立的组件实例（避免多块回调冲突）
+        // 每个代码块独立的组件实例
         const localBaziTable = new BaziTable(this.paipan);
         const localDayunDisplay = new DayunDisplay(this.paipan);
         const localLiuyueDisplay = new LiuyueDisplay(this.paipan);
         const localResultDisplay = new ResultDisplay(this.paipan);
 
-        // 重渲染函数：清空 innerContainer → 用最新 baziData 重绘
         const rerender = () => {
             innerContainer.empty();
             this.renderComponents(
@@ -104,20 +101,17 @@ export class ZipingCodeBlockRenderer {
                 localBaziTable, localDayunDisplay,
                 localLiuyueDisplay, localResultDisplay
             );
-            // 重渲染后需重新绑定回调（组件实例未变，但 setCallbacks 可多次调用）
             this.bindCallbacks(
                 baziData, rerender,
                 localDayunDisplay, localLiuyueDisplay, localResultDisplay
             );
         };
 
-        // 绑定交互回调
         this.bindCallbacks(
             baziData, rerender,
             localDayunDisplay, localLiuyueDisplay, localResultDisplay
         );
 
-        // 首次渲染
         this.renderComponents(
             innerContainer, baziData,
             localBaziTable, localDayunDisplay,

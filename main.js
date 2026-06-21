@@ -34610,11 +34610,10 @@ var ZipingCodeBlockRenderer = class {
     const host = container.createEl("div");
     host.addClass("ziping-bazi-block");
     const shadow = host.attachShadow({ mode: "closed" });
-    const styleEl = document.createElement("style");
-    styleEl.textContent = SHADOW_BAZI_CSS;
-    shadow.appendChild(styleEl);
-    const innerContainer = document.createElement("div");
-    innerContainer.className = "bazi-result-container";
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(SHADOW_BAZI_CSS);
+    shadow.adoptedStyleSheets = [sheet];
+    const innerContainer = host.createDiv("bazi-result-container");
     shadow.appendChild(innerContainer);
     const localBaziTable = new BaziTable(this.paipan);
     const localDayunDisplay = new DayunDisplay(this.paipan);

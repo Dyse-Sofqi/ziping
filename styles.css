@@ -56,6 +56,12 @@
     padding: 6px;
     display: inline-block;
     line-height: 1.25;
+    font-size: 15px;
+    color: var(--text-normal);
+    font-family: var(--font-text);
+    text-align: start;
+    letter-spacing: normal;
+    word-spacing: normal;
 }
 
 /* 消除阅读视图全局行距/段落边距/字体大小对排盘视图的渗透 */
@@ -96,6 +102,7 @@
     white-space: nowrap;
     background-color: transparent;
     font-size: inherit;
+    margin: 0;
 }
 
 /* 清除阅读视图对隔行背景的渗透 */
@@ -487,7 +494,8 @@
 /* 1. 基础复选框样式：隐藏原生样式，画成圆角矩形条 */
 .solar-terms-row .ziping-switch-checkbox,
 .tab-content .ziping-switch-checkbox,
-.dayun-info .ziping-switch-checkbox {
+.dayun-info .ziping-switch-checkbox,
+.bazi-result-container .ziping-switch-checkbox {
     --webkit-appearance: none !important;
     /* 移除浏览器默认的复选框样式（小方框）。 */
     appearance: none !important;
@@ -507,7 +515,8 @@
 /* 2. 白色圆点（滑块） */
 .ziping-switch-checkbox::before,
 .tab-content .ziping-switch-checkbox::before,
-.dayun-info .ziping-switch-checkbox::before {
+.dayun-info .ziping-switch-checkbox::before,
+.bazi-result-container .ziping-switch-checkbox::before {
     /* 伪元素必须有 content 属性才能显示。这里设为空字符串。 */
     content: "" !important;
     /* 绝对定位，相对于父元素（.switch）的位置来放置。 */
@@ -525,14 +534,16 @@
 
 .solar-terms-row .ziping-switch-checkbox:checked:after,
 .tab-content .ziping-switch-checkbox:checked:after,
-.dayun-info .ziping-switch-checkbox:checked:after {
+.dayun-info .ziping-switch-checkbox:checked:after,
+.bazi-result-container .ziping-switch-checkbox:checked:after {
     content: none !important;
 }
 
 /* 3. 选中（开启）状态：改变背景色 */
 .solar-terms-row .ziping-switch-checkbox:checked,
 .tab-content .ziping-switch-checkbox:checked,
-.dayun-info .ziping-switch-checkbox:checked {
+.dayun-info .ziping-switch-checkbox:checked,
+.bazi-result-container .ziping-switch-checkbox:checked {
     background-color: var(--interactive-accent) !important;
     background-image: none !important;
 }
@@ -540,7 +551,8 @@
 /* 4. 选中时圆点向右滑动 */
 .solar-terms-row .ziping-switch-checkbox:checked::before,
 .tab-content .ziping-switch-checkbox:checked::before,
-.dayun-info .ziping-switch-checkbox:checked::before {
+.dayun-info .ziping-switch-checkbox:checked::before,
+.bazi-result-container .ziping-switch-checkbox:checked::before {
     transform: translateX(16px) !important;
 }
 
