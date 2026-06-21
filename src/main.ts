@@ -171,34 +171,16 @@ export default class ZipingPlugin extends Plugin {
 			lines.push(`#### ${paiPanCode}，${data.name || '案例'}`);
 			lines.push('');
 
-			// 3. 使用Paipan类获取十神，确保与BaziView.ts中显示一致
-			const paipan = new Paipan();
-			const riZhuGan = data.bazi.gztg[2];
+			// 输出 ziping 代码块，替代十神/天干/地支行
+			lines.push('```ziping');
+			lines.push(paiPanCode);
+			lines.push('```');
 
-			// 获取完整十神名称
-			const nianGanShiShenFull = paipan.getShiShenFull(riZhuGan, data.bazi.gztg[0]);
-			const yueGanShiShenFull = paipan.getShiShenFull(riZhuGan, data.bazi.gztg[1]);
-			const shiGanShiShenFull = paipan.getShiShenFull(riZhuGan, data.bazi.gztg[3]);
-
-			// 转换为简写
-			const nianGanShiShen = this.getShiShenShortFromFull(nianGanShiShenFull);
-			const yueGanShiShen = this.getShiShenShortFromFull(yueGanShiShenFull);
-			const shiGanShiShen = this.getShiShenShortFromFull(shiGanShiShenFull);
-
-			// 5. 展示十神简写
-			lines.push(`${nianGanShiShen}${yueGanShiShen}〇${shiGanShiShen}`);
-
-			// 6. 展示天干
-			lines.push(`${data.bazi.gztg[0]}${data.bazi.gztg[1]}${data.bazi.gztg[2]}${data.bazi.gztg[3]}`);
-
-			// 7. 展示地支
-			lines.push(`${data.bazi.dz[0]}${data.bazi.dz[1]}${data.bazi.dz[2]}${data.bazi.dz[3]}`);
-
-			// 8. 展示九部大运干支
+			// 展示九部大运干支
 			const dayunItems = data.dayun.allDayun.slice(0, 9);
 
 			lines.push('');
-			// 9. 生成大运列表，每行展示一个大运的起始年份和干支和岁数，并添加其下的所有流年
+			// 生成大运列表，每行展示一个大运的起始年份和干支和岁数，并添加其下的所有流年
 			for (const dayun of dayunItems) {
 				// 添加大运项
 				lines.push(`- ${dayun.startYear}年${dayun.age}岁${dayun.gan}${dayun.zhi}`);

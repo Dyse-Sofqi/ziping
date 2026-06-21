@@ -34825,17 +34825,9 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
     const paiPanCode = `${String(data.year)}.${String(data.month).padStart(2, "0")}.${String(data.day).padStart(2, "0")}-${String(hour).padStart(2, "0")}.${String(minute).padStart(2, "0")}-${genderCode}`;
     lines.push(`#### ${paiPanCode}\uFF0C${data.name || "\u6848\u4F8B"}`);
     lines.push("");
-    const paipan = new Paipan();
-    const riZhuGan = data.bazi.gztg[2];
-    const nianGanShiShenFull = paipan.getShiShenFull(riZhuGan, data.bazi.gztg[0]);
-    const yueGanShiShenFull = paipan.getShiShenFull(riZhuGan, data.bazi.gztg[1]);
-    const shiGanShiShenFull = paipan.getShiShenFull(riZhuGan, data.bazi.gztg[3]);
-    const nianGanShiShen = this.getShiShenShortFromFull(nianGanShiShenFull);
-    const yueGanShiShen = this.getShiShenShortFromFull(yueGanShiShenFull);
-    const shiGanShiShen = this.getShiShenShortFromFull(shiGanShiShenFull);
-    lines.push(`${nianGanShiShen}${yueGanShiShen}\u3007${shiGanShiShen}`);
-    lines.push(`${data.bazi.gztg[0]}${data.bazi.gztg[1]}${data.bazi.gztg[2]}${data.bazi.gztg[3]}`);
-    lines.push(`${data.bazi.dz[0]}${data.bazi.dz[1]}${data.bazi.dz[2]}${data.bazi.dz[3]}`);
+    lines.push("```ziping");
+    lines.push(paiPanCode);
+    lines.push("```");
     const dayunItems = data.dayun.allDayun.slice(0, 9);
     lines.push("");
     for (const dayun of dayunItems) {
