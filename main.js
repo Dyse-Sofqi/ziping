@@ -34750,7 +34750,6 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
     if (leaves.length > 0) {
       const leaf2 = leaves[0];
       if (leaf2) {
-        void workspace.revealLeaf(leaf2);
         const view = leaf2.view;
         if (view && view.loadCurrentTime) {
           view.loadCurrentTime();

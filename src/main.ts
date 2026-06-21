@@ -71,7 +71,6 @@ export default class ZipingPlugin extends Plugin {
 			if (leaves.length > 0) {
 				const leaf = leaves[0];
 				if (leaf) {
-					void workspace.revealLeaf(leaf);
 					// 刷新数据
 					const view = leaf.view as BaziView;
 					if (view && view.loadCurrentTime) {
