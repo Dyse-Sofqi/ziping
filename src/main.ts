@@ -188,10 +188,29 @@ export default class ZipingPlugin extends Plugin {
 			lines.push(paiPanCode);
 			lines.push('```');
 
-			// 展示九部大运干支
+			// 小运部分：起运前逐年的小运流年
+			const firstDayunAge = data.dayun.allDayun[0]?.age;
+			const xiaoyunCount = firstDayunAge > 0 ? firstDayunAge : 0;
+			if (xiaoyunCount > 0) {
+				lines.push('- 小运');
+				const xiaoyunHourGan = data.bazi.gztg[3];
+				const xiaoyunHourZhi = data.bazi.dz[3];
+				const xiaoyunPaipan = new Paipan();
+				for (let i = 0; i < xiaoyunCount; i++) {
+					const age = i + 1;
+					const year = data.year + i;
+					const yearGanZhi = xiaoyunPaipan.getYearGanZhi(year);
+					const xiaoyun = xiaoyunPaipan.getXiaoYun(
+						xiaoyunHourGan, xiaoyunHourZhi,
+						data.year, data.gender, age
+					);
+					lines.push(`\t- ${year}年${age}岁${yearGanZhi.gan}${yearGanZhi.zhi}(小运${xiaoyun.gan}${xiaoyun.zhi})`);
+				}
+			}
+
+			// 展示九步大运干支
 			const dayunItems = data.dayun.allDayun.slice(0, 9);
 
-			lines.push('');
 			// 生成大运列表，每行展示一个大运的起始年份和干支和岁数，并添加其下的所有流年
 			for (const dayun of dayunItems) {
 				// 添加大运项

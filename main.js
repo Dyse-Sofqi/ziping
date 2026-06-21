@@ -34853,8 +34853,28 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
     lines.push("```ziping");
     lines.push(paiPanCode);
     lines.push("```");
+    const firstDayunAge = data.dayun.allDayun[0]?.age;
+    const xiaoyunCount = firstDayunAge > 0 ? firstDayunAge : 0;
+    if (xiaoyunCount > 0) {
+      lines.push("- \u5C0F\u8FD0");
+      const xiaoyunHourGan = data.bazi.gztg[3];
+      const xiaoyunHourZhi = data.bazi.dz[3];
+      const xiaoyunPaipan = new Paipan();
+      for (let i = 0; i < xiaoyunCount; i++) {
+        const age = i + 1;
+        const year = data.year + i;
+        const yearGanZhi = xiaoyunPaipan.getYearGanZhi(year);
+        const xiaoyun = xiaoyunPaipan.getXiaoYun(
+          xiaoyunHourGan,
+          xiaoyunHourZhi,
+          data.year,
+          data.gender,
+          age
+        );
+        lines.push(`	- ${year}\u5E74${age}\u5C81${yearGanZhi.gan}${yearGanZhi.zhi}(\u5C0F\u8FD0${xiaoyun.gan}${xiaoyun.zhi})`);
+      }
+    }
     const dayunItems = data.dayun.allDayun.slice(0, 9);
-    lines.push("");
     for (const dayun of dayunItems) {
       lines.push(`- ${dayun.startYear}\u5E74${dayun.age}\u5C81${dayun.gan}${dayun.zhi}`);
       const liunianItems = this.calculateLiunianForDayun(dayun, data.year);
