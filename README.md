@@ -8,7 +8,7 @@
 <h1 align="center">子平排盘 · Ziping Bazi</h1>
 <p align="center"><b>专业八字排盘工具 · Professional Bazi (Four Pillars) Calculator for Obsidian</b></p>
 
-<p align="center"><a href="README.en.md">English</a></p>
+<p align="center"><a href="README.en.md"><img src="https://img.shields.io/badge/English-7C3AED?style=flat-square" alt="English"/></a></p>
 
 ---
 
