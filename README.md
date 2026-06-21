@@ -8,6 +8,8 @@
 <h1 align="center">子平排盘 · Ziping Bazi</h1>
 <p align="center"><b>专业八字排盘工具 · Professional Bazi (Four Pillars) Calculator for Obsidian</b></p>
 
+<p align="center"><a href="README.en.md">English</a></p>
+
 ---
 
 ## 📖 简介
@@ -161,38 +163,6 @@ aliases: []
 	- 2006年17岁丙寅
 	...
 ````
-
-## 🧱 技术架构
-
-```
-src/
-├── main.ts                 # 插件入口，注册视图/命令/设置
-├── Paipan.ts               # 排盘核心引擎封装
-├── models/
-│   └── types.ts            # 类型定义
-├── services/
-│   ├── BaziService.ts      # 八字计算服务
-│   └── IdentificationService.ts  # 排盘码识别服务
-├── ui/
-│   ├── BaziView.ts         # 侧边栏视图
-│   ├── ZipingCodeBlockRenderer.ts  # 代码块渲染器（Shadow DOM 隔离）
-│   ├── zipingShadowStyles.ts       # Shadow DOM 样式
-│   ├── components/
-│   │   ├── BaziTable.ts    # 八字表格组件
-│   │   ├── DayunDisplay.ts # 大运显示组件
-│   │   ├── LiuyueDisplay.ts # 流月显示组件
-│   │   └── ResultDisplay.ts # 结果显示组件
-│   └── cities/             # 城市经纬度数据
-└── utils/
-    └── styleUtils.ts       # 样式工具
-```
-
-### 技术要点
-
-- **纯前端计算**：所有排盘计算在本地完成，无需网络请求
-- **Shadow DOM 隔离**：代码块视图使用 Shadow DOM + `CSSStyleSheet.adoptedStyleSheets`，完全隔离主题样式
-- **Paipan.js 集成**：基于成熟的排盘算法库
-- **Obsidian API**：使用 `registerMarkdownCodeBlockProcessor`、`registerView`、`addCommand` 等标准 API
 
 ## 🔄 版本历史
 
