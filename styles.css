@@ -568,6 +568,20 @@
     margin-left: auto;
 }
 /* ══════════════════════════════════════════════════════════════ */
+/* 内容包裹层：inline-flex 自适应宽度，单/多排盘通用              */
+/* ══════════════════════════════════════════════════════════════ */
+.ziping-content-wrapper {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.ziping-content-wrapper .ziping-bazi-block {
+    flex: 0 0 auto;
+}
+
+/* ══════════════════════════════════════════════════════════════ */
 /* 代码块视图 —— Shadow DOM 宿主                              */
 /* 内容渲染在 Shadow Root 中，不受任何主题规则影响              */
 /* 此处仅为宿主元素提供最小定位样式                             */

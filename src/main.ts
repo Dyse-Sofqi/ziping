@@ -170,6 +170,19 @@ export default class ZipingPlugin extends Plugin {
 			lines.push(`#### ${paiPanCode}，${data.name || '案例'}`);
 			lines.push('');
 
+			// 插入乾造/坤造及四柱干支描述行
+			const genderLabel = data.gender === 0 ? '乾' : '坤';
+			const yearGan = data.bazi.gztg[0];
+			const yearZhi = data.bazi.dz[0];
+			const monthGan = data.bazi.gztg[1];
+			const monthZhi = data.bazi.dz[1];
+			const dayGan = data.bazi.gztg[2];
+			const dayZhi = data.bazi.dz[2];
+			const hourGan = data.bazi.gztg[3];
+			const hourZhi = data.bazi.dz[3];
+			lines.push(`${genderLabel}造：${yearGan}${yearZhi}年、${monthGan}${monthZhi}月、${dayGan}${dayZhi}日、${hourGan}${hourZhi}时`);
+			lines.push('');
+
 			// 输出 ziping 代码块，替代十神/天干/地支行
 			lines.push('```ziping');
 			lines.push(paiPanCode);

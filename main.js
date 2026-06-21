@@ -34573,35 +34573,46 @@ var ZipingCodeBlockRenderer = class {
       el.createEl("p", { text: "\u6392\u76D8\u7801\u4E3A\u7A7A" });
       return;
     }
+    const embedBlock = el.parentElement;
+    if (embedBlock) {
+      embedBlock.addClass("ziping-embed-block-align");
+    }
+    const wrapper = el.createDiv("ziping-content-wrapper");
     for (const code of lines) {
-      const parsed = this.identificationService.parsePaiPanCode(code);
-      if (!parsed.isValid) {
-        const codeBlock = el.createEl("pre");
-        codeBlock.addClass("ziping-code-invalid");
-        codeBlock.setText(code);
-        continue;
-      }
-      try {
-        const baziData = await this.baziService.calculateBazi(
-          parsed.year,
-          parsed.month,
-          parsed.day,
-          parsed.hour,
-          parsed.minute,
-          0,
-          parsed.gender,
-          "",
-          false,
-          ""
-        );
-        this.renderSingleBazi(el, baziData);
-      } catch (error) {
-        const errorEl = el.createEl("div");
-        errorEl.addClass("ziping-error");
-        errorEl.setText(`\u6392\u76D8\u8BA1\u7B97\u5931\u8D25: ${error instanceof Error ? error.message : String(error)}`);
-      }
+      void this.renderSingleCode(code, wrapper);
     }
   }
+  // 渲染单个排盘码到指定的父容器中
+  async renderSingleCode(code, parent) {
+    const parsed = this.identificationService.parsePaiPanCode(code);
+    if (!parsed.isValid) {
+      const codeBlock = parent.createEl("pre");
+      codeBlock.addClass("ziping-code-invalid");
+      codeBlock.setText(code);
+      return;
+    }
+    try {
+      const baziData = await this.baziService.calculateBazi(
+        parsed.year,
+        parsed.month,
+        parsed.day,
+        parsed.hour,
+        parsed.minute,
+        0,
+        parsed.gender,
+        "",
+        false,
+        ""
+      );
+      const blockHost = parent.createDiv("ziping-bazi-block");
+      this.renderSingleBaziInto(blockHost, baziData);
+    } catch (error) {
+      const errorEl = parent.createEl("div");
+      errorEl.addClass("ziping-error");
+      errorEl.setText(`\u6392\u76D8\u8BA1\u7B97\u5931\u8D25: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  // 兼容旧入口：创建宿主并渲染（侧边栏等处调用）
   renderSingleBazi(container, baziData) {
     const embedBlock = container.parentElement;
     if (embedBlock) {
@@ -34609,6 +34620,10 @@ var ZipingCodeBlockRenderer = class {
     }
     const host = container.createEl("div");
     host.addClass("ziping-bazi-block");
+    this.renderSingleBaziInto(host, baziData);
+  }
+  // 核心渲染：向已创建的宿主元素中渲染单个排盘
+  renderSingleBaziInto(host, baziData) {
     const shadow = host.attachShadow({ mode: "closed" });
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(SHADOW_BAZI_CSS);
@@ -34823,6 +34838,17 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
     const minute = data.timeCorrectionEnabled && data.bazi.zty ? data.bazi.zty.minute : data.minute;
     const paiPanCode = `${String(data.year)}.${String(data.month).padStart(2, "0")}.${String(data.day).padStart(2, "0")}-${String(hour).padStart(2, "0")}.${String(minute).padStart(2, "0")}-${genderCode}`;
     lines.push(`#### ${paiPanCode}\uFF0C${data.name || "\u6848\u4F8B"}`);
+    lines.push("");
+    const genderLabel = data.gender === 0 ? "\u4E7E" : "\u5764";
+    const yearGan = data.bazi.gztg[0];
+    const yearZhi = data.bazi.dz[0];
+    const monthGan = data.bazi.gztg[1];
+    const monthZhi = data.bazi.dz[1];
+    const dayGan = data.bazi.gztg[2];
+    const dayZhi = data.bazi.dz[2];
+    const hourGan = data.bazi.gztg[3];
+    const hourZhi = data.bazi.dz[3];
+    lines.push(`${genderLabel}\u9020\uFF1A${yearGan}${yearZhi}\u5E74\u3001${monthGan}${monthZhi}\u6708\u3001${dayGan}${dayZhi}\u65E5\u3001${hourGan}${hourZhi}\u65F6`);
     lines.push("");
     lines.push("```ziping");
     lines.push(paiPanCode);

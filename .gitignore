@@ -21,5 +21,8 @@ paipan.js
 # obsidian
 data.json
 
+# claude
+.claude/
+
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store

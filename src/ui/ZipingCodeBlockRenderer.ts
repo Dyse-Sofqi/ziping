@@ -39,41 +39,58 @@ export class ZipingCodeBlockRenderer {
             return;
         }
 
-        for (const code of lines) {
-            const parsed = this.identificationService.parsePaiPanCode(code);
-            if (!parsed.isValid) {
-                const codeBlock = el.createEl('pre');
-                codeBlock.addClass('ziping-code-invalid');
-                codeBlock.setText(code);
-                continue;
-            }
-
-            try {
-                const baziData = await this.baziService.calculateBazi(
-                    parsed.year, parsed.month, parsed.day,
-                    parsed.hour, parsed.minute, 0,
-                    parsed.gender, '', false, ''
-                );
-
-                this.renderSingleBazi(el, baziData);
-            } catch (error) {
-                const errorEl = el.createEl('div');
-                errorEl.addClass('ziping-error');
-                errorEl.setText(`排盘计算失败: ${error instanceof Error ? error.message : String(error)}`);
-            }
-        }
-    }
-
-    private renderSingleBazi(container: HTMLElement, baziData: CurrentBaziData): void {
-        // 让外层 .cm-preview-code-block 自适应内容宽度
-        const embedBlock = container.parentElement;
+        // 外层自适应宽度
+        const embedBlock = el.parentElement;
         if (embedBlock) {
             embedBlock.addClass('ziping-embed-block-align');
         }
 
-        // 宿主元素（light-DOM 可见，用于定位）
+        // inline-flex 包裹层：单排盘时宽度随内容收缩，多排盘时横向排列换行
+        const wrapper = el.createDiv('ziping-content-wrapper');
+        for (const code of lines) {
+            void this.renderSingleCode(code, wrapper);
+        }
+    }
+
+    // 渲染单个排盘码到指定的父容器中
+    private async renderSingleCode(code: string, parent: HTMLElement): Promise<void> {
+        const parsed = this.identificationService.parsePaiPanCode(code);
+        if (!parsed.isValid) {
+            const codeBlock = parent.createEl('pre');
+            codeBlock.addClass('ziping-code-invalid');
+            codeBlock.setText(code);
+            return;
+        }
+
+        try {
+            const baziData = await this.baziService.calculateBazi(
+                parsed.year, parsed.month, parsed.day,
+                parsed.hour, parsed.minute, 0,
+                parsed.gender, '', false, ''
+            );
+
+            const blockHost = parent.createDiv('ziping-bazi-block');
+            this.renderSingleBaziInto(blockHost, baziData);
+        } catch (error) {
+            const errorEl = parent.createEl('div');
+            errorEl.addClass('ziping-error');
+            errorEl.setText(`排盘计算失败: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    // 兼容旧入口：创建宿主并渲染（侧边栏等处调用）
+    private renderSingleBazi(container: HTMLElement, baziData: CurrentBaziData): void {
+        const embedBlock = container.parentElement;
+        if (embedBlock) {
+            embedBlock.addClass('ziping-embed-block-align');
+        }
         const host = container.createEl('div');
         host.addClass('ziping-bazi-block');
+        this.renderSingleBaziInto(host, baziData);
+    }
+
+    // 核心渲染：向已创建的宿主元素中渲染单个排盘
+    private renderSingleBaziInto(host: HTMLElement, baziData: CurrentBaziData): void {
 
         // ═══ Shadow DOM（完全隔离主题样式）═══
         const shadow = host.attachShadow({ mode: 'closed' });
