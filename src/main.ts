@@ -188,6 +188,9 @@ export default class ZipingPlugin extends Plugin {
 			lines.push(paiPanCode);
 			lines.push('```');
 
+			lines.push('');
+			lines.push('- 原局');
+			lines.push('- 六亲');
 			// 小运部分：起运前逐年的小运流年
 			const firstDayunAge = data.dayun.allDayun[0]?.age;
 			const xiaoyunCount = firstDayunAge > 0 ? firstDayunAge : 0;

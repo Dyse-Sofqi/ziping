@@ -34853,6 +34853,9 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
     lines.push("```ziping");
     lines.push(paiPanCode);
     lines.push("```");
+    lines.push("");
+    lines.push("- \u539F\u5C40");
+    lines.push("- \u516D\u4EB2");
     const firstDayunAge = data.dayun.allDayun[0]?.age;
     const xiaoyunCount = firstDayunAge > 0 ? firstDayunAge : 0;
     if (xiaoyunCount > 0) {
