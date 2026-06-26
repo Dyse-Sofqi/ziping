@@ -19,7 +19,7 @@ interface LeftBlock {
 }
 
 export function zipingLeftViewPlugin(
-    renderCodes: (codes: string[], parent: HTMLElement) => Promise<void>,
+    renderCodes: (codes: string[], parent: HTMLElement, onLiunianNavigate?: (year: number) => void) => Promise<void>,
 ) {
     return ViewPlugin.fromClass(
         class {
@@ -139,14 +139,47 @@ export function zipingLeftViewPlugin(
                 this.renderedKey = key;
                 this.panel.style.display = '';
                 this.wrapper.empty();
-                // 渲染完成后更新定位（内容高度可能变化）
-                void renderCodes(active.codes, this.wrapper).then(() => this.updatePosition());
+
+                // 捕获 paiPanCode，供流年导航回调使用
+                const paiPanCode = active.codes[0];
+                const view = this.view;
+
+                void renderCodes(active.codes, this.wrapper, (year: number) => {
+                    const doc = view.state.doc;
+                    const text = doc.toString();
+
+                    // 1. 搜索 paiPanCode（二级列表格式，允许 md 标记）
+                    const codePattern = `\\t- [*=_~]{0,4}${escapeRegex(paiPanCode)}`;
+                    const codeRe = new RegExp(codePattern, 'g');
+                    const codeMatch = codeRe.exec(text);
+                    if (!codeMatch) return;
+                    const codeEnd = codeMatch.index + codeMatch[0].length;
+
+                    // 2. 从该位置向后搜索流年行（\t- [*=_~]*{year}年）
+                    const yearPattern = `\\t- [*=_~]{0,4}${year}年`;
+                    const yearRe = new RegExp(yearPattern, 'g');
+                    yearRe.lastIndex = codeEnd;
+                    const yearMatch = yearRe.exec(text);
+                    if (!yearMatch) return;
+
+                    // 3. 光标移至该行末尾
+                    const targetPos = yearMatch.index + yearMatch[0].length;
+
+                    view.dispatch({
+                        selection: { anchor: targetPos, head: targetPos },
+                        scrollIntoView: true,
+                    });
+                }).then(() => this.updatePosition());
             }
         },
     );
 }
 
 // ── 辅助 ──
+
+function escapeRegex(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 function findAllLeftBlocks(text: string): LeftBlock[] {
     const blocks: LeftBlock[] = [];

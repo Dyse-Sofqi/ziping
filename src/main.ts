@@ -39,7 +39,7 @@ export default class ZipingPlugin extends Plugin {
 			// ViewPlugin 在编辑器层级创建单个浮动面板，不会被 viewport 回收
 			const renderer = this.codeBlockRenderer;
 			this.registerEditorExtension(
-				zipingLeftViewPlugin((codes, parent) => renderer.renderCodesToElement(codes, parent)),
+				zipingLeftViewPlugin((codes, parent, cb) => renderer.renderCodesToElement(codes, parent, cb)),
 			);
 			// 添加打开侧边栏视图的命令
 			this.addCommand({
@@ -198,6 +198,7 @@ export default class ZipingPlugin extends Plugin {
 
 			lines.push('');
 			lines.push('- 原局');
+			lines.push(`\t- ${paiPanCode}`);
 			lines.push('- 六亲');
 			// 小运部分：起运前逐年的小运流年
 			const firstDayunAge = data.dayun.allDayun[0]?.age;

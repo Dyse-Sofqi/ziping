@@ -52,9 +52,14 @@ export class ZipingCodeBlockRenderer {
     }
 
     // ── CM6 ViewPlugin 调用的公开入口 ──
-    async renderCodesToElement(codes: string[], parent: HTMLElement): Promise<void> {
+    // onLiunianNavigate: 流年切换时触发，用于导航编辑器光标到文档中的对应年份行
+    async renderCodesToElement(
+        codes: string[],
+        parent: HTMLElement,
+        onLiunianNavigate?: (year: number) => void,
+    ): Promise<void> {
         for (const code of codes) {
-            await this.renderSingleCode(code, parent);
+            await this.renderSingleCode(code, parent, onLiunianNavigate);
         }
     }
 
@@ -71,7 +76,11 @@ export class ZipingCodeBlockRenderer {
     }
 
     // ── 单个排盘码渲染 ──
-    private async renderSingleCode(code: string, parent: HTMLElement): Promise<void> {
+    private async renderSingleCode(
+        code: string,
+        parent: HTMLElement,
+        onLiunianNavigate?: (year: number) => void,
+    ): Promise<void> {
         const parsed = this.identificationService.parsePaiPanCode(code);
         if (!parsed.isValid) {
             const codeBlock = parent.createEl('pre');
@@ -88,7 +97,7 @@ export class ZipingCodeBlockRenderer {
             );
 
             const blockHost = parent.createDiv('ziping-bazi-block');
-            this.renderSingleBaziInto(blockHost, baziData);
+            this.renderSingleBaziInto(blockHost, baziData, onLiunianNavigate);
         } catch (error) {
             const errorEl = parent.createEl('div');
             errorEl.addClass('ziping-error');
@@ -97,7 +106,11 @@ export class ZipingCodeBlockRenderer {
     }
 
     // ── 核心渲染：Shadow DOM + 组件 ──
-    private renderSingleBaziInto(host: HTMLElement, baziData: CurrentBaziData): void {
+    private renderSingleBaziInto(
+        host: HTMLElement,
+        baziData: CurrentBaziData,
+        onLiunianNavigate?: (year: number) => void,
+    ): void {
 
         // ═══ Shadow DOM（完全隔离主题样式）═══
         const shadow = host.attachShadow({ mode: 'closed' });
@@ -123,13 +136,15 @@ export class ZipingCodeBlockRenderer {
             );
             this.bindCallbacks(
                 baziData, rerender,
-                localDayunDisplay, localLiuyueDisplay, localResultDisplay
+                localDayunDisplay, localLiuyueDisplay, localResultDisplay,
+                onLiunianNavigate,
             );
         };
 
         this.bindCallbacks(
             baziData, rerender,
-            localDayunDisplay, localLiuyueDisplay, localResultDisplay
+            localDayunDisplay, localLiuyueDisplay, localResultDisplay,
+            onLiunianNavigate,
         );
 
         this.renderComponents(
@@ -155,7 +170,8 @@ export class ZipingCodeBlockRenderer {
     private bindCallbacks(
         baziData: CurrentBaziData, rerender: () => void,
         dayunDisplay: DayunDisplay, liuyueDisplay: LiuyueDisplay,
-        resultDisplay: ResultDisplay
+        resultDisplay: ResultDisplay,
+        onLiunianNavigate?: (year: number) => void,
     ): void {
         resultDisplay.setCallbacks(
             undefined,
@@ -181,6 +197,18 @@ export class ZipingCodeBlockRenderer {
                     baziData.liuyue = this.baziService.recalculateLiuyue(baziData);
                 }
                 rerender();
+
+                // 通知 ViewPlugin 导航编辑器光标到文档中对应的流年行
+                if (onLiunianNavigate) {
+                    let year: number;
+                    if (dayunIndex === -1) {
+                        year = baziData.year + liunianIndex;
+                    } else {
+                        const dayun = baziData.dayun.allDayun[dayunIndex];
+                        year = (dayun?.startYear ?? baziData.year) + liunianIndex;
+                    }
+                    onLiunianNavigate(year);
+                }
             },
             () => {
                 baziData.selectedDayunIndex = -1;

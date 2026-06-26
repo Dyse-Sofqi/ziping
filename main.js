@@ -34583,9 +34583,10 @@ var ZipingCodeBlockRenderer = class {
     this.renderNormalMode(el, lines);
   }
   // ── CM6 ViewPlugin 调用的公开入口 ──
-  async renderCodesToElement(codes, parent) {
+  // onLiunianNavigate: 流年切换时触发，用于导航编辑器光标到文档中的对应年份行
+  async renderCodesToElement(codes, parent, onLiunianNavigate) {
     for (const code of codes) {
-      await this.renderSingleCode(code, parent);
+      await this.renderSingleCode(code, parent, onLiunianNavigate);
     }
   }
   // ── 内联渲染 ──
@@ -34600,7 +34601,7 @@ var ZipingCodeBlockRenderer = class {
     }
   }
   // ── 单个排盘码渲染 ──
-  async renderSingleCode(code, parent) {
+  async renderSingleCode(code, parent, onLiunianNavigate) {
     const parsed = this.identificationService.parsePaiPanCode(code);
     if (!parsed.isValid) {
       const codeBlock = parent.createEl("pre");
@@ -34622,7 +34623,7 @@ var ZipingCodeBlockRenderer = class {
         ""
       );
       const blockHost = parent.createDiv("ziping-bazi-block");
-      this.renderSingleBaziInto(blockHost, baziData);
+      this.renderSingleBaziInto(blockHost, baziData, onLiunianNavigate);
     } catch (error) {
       const errorEl = parent.createEl("div");
       errorEl.addClass("ziping-error");
@@ -34630,7 +34631,7 @@ var ZipingCodeBlockRenderer = class {
     }
   }
   // ── 核心渲染：Shadow DOM + 组件 ──
-  renderSingleBaziInto(host, baziData) {
+  renderSingleBaziInto(host, baziData, onLiunianNavigate) {
     const shadow = host.attachShadow({ mode: "closed" });
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(SHADOW_BAZI_CSS);
@@ -34656,7 +34657,8 @@ var ZipingCodeBlockRenderer = class {
         rerender,
         localDayunDisplay,
         localLiuyueDisplay,
-        localResultDisplay
+        localResultDisplay,
+        onLiunianNavigate
       );
     };
     this.bindCallbacks(
@@ -34664,7 +34666,8 @@ var ZipingCodeBlockRenderer = class {
       rerender,
       localDayunDisplay,
       localLiuyueDisplay,
-      localResultDisplay
+      localResultDisplay,
+      onLiunianNavigate
     );
     this.renderComponents(
       innerContainer,
@@ -34683,7 +34686,7 @@ var ZipingCodeBlockRenderer = class {
       liuyueDisplay.displayLiuyueInfo(wrapper, baziData);
     }
   }
-  bindCallbacks(baziData, rerender, dayunDisplay, liuyueDisplay, resultDisplay) {
+  bindCallbacks(baziData, rerender, dayunDisplay, liuyueDisplay, resultDisplay, onLiunianNavigate) {
     resultDisplay.setCallbacks(
       void 0,
       (showHourPillar) => {
@@ -34707,6 +34710,16 @@ var ZipingCodeBlockRenderer = class {
           baziData.liuyue = this.baziService.recalculateLiuyue(baziData);
         }
         rerender();
+        if (onLiunianNavigate) {
+          let year;
+          if (dayunIndex === -1) {
+            year = baziData.year + liunianIndex;
+          } else {
+            const dayun = baziData.dayun.allDayun[dayunIndex];
+            year = (dayun?.startYear ?? baziData.year) + liunianIndex;
+          }
+          onLiunianNavigate(year);
+        }
       },
       () => {
         baziData.selectedDayunIndex = -1;
@@ -34823,10 +34836,33 @@ function zipingLeftViewPlugin(renderCodes) {
         this.renderedKey = key;
         this.panel.style.display = "";
         this.wrapper.empty();
-        void renderCodes(active.codes, this.wrapper).then(() => this.updatePosition());
+        const paiPanCode = active.codes[0];
+        const view = this.view;
+        void renderCodes(active.codes, this.wrapper, (year) => {
+          const doc = view.state.doc;
+          const text2 = doc.toString();
+          const codePattern = `\\t- [*=_~]{0,4}${escapeRegex(paiPanCode)}`;
+          const codeRe = new RegExp(codePattern, "g");
+          const codeMatch = codeRe.exec(text2);
+          if (!codeMatch) return;
+          const codeEnd = codeMatch.index + codeMatch[0].length;
+          const yearPattern = `\\t- [*=_~]{0,4}${year}\u5E74`;
+          const yearRe = new RegExp(yearPattern, "g");
+          yearRe.lastIndex = codeEnd;
+          const yearMatch = yearRe.exec(text2);
+          if (!yearMatch) return;
+          const targetPos = yearMatch.index + yearMatch[0].length;
+          view.dispatch({
+            selection: { anchor: targetPos, head: targetPos },
+            scrollIntoView: true
+          });
+        }).then(() => this.updatePosition());
       }
     }
   );
+}
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 function findAllLeftBlocks(text) {
   const blocks = [];
@@ -34880,7 +34916,7 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
     });
     const renderer = this.codeBlockRenderer;
     this.registerEditorExtension(
-      zipingLeftViewPlugin((codes, parent) => renderer.renderCodesToElement(codes, parent))
+      zipingLeftViewPlugin((codes, parent, cb) => renderer.renderCodesToElement(codes, parent, cb))
     );
     this.addCommand({
       id: "open-paipan-view",
@@ -34998,6 +35034,7 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
     lines.push("```");
     lines.push("");
     lines.push("- \u539F\u5C40");
+    lines.push(`	- ${paiPanCode}`);
     lines.push("- \u516D\u4EB2");
     const firstDayunAge = data.dayun.allDayun[0]?.age;
     const xiaoyunCount = firstDayunAge > 0 ? firstDayunAge : 0;
