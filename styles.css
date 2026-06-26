@@ -597,3 +597,72 @@
     width: fit-content;
     max-width: 100%;
 }
+
+/* ══════════════════════════════════════════════════════════════ */
+/* Left mode: 排盘码-left                                        */
+/* position:fixed 在正文左侧空白区域，不占用正文空间               */
+/* ══════════════════════════════════════════════════════════════ */
+/* 原代码块占位折叠 */
+.ziping-left-mode {
+    min-height: 0 !important;
+    height: 0 !important;
+    overflow: visible !important;
+}
+
+/* ── 固定定位面板（left/top 由 JS 在 view-content 位置计算） ── */
+.ziping-left-panel {
+    position: fixed;
+    left: 0;
+    top: 60px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    z-index: 1;
+    background: transparent;
+    width: fit-content;
+    max-width: 55vw;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── 关闭按钮标题栏（共用） ── */
+.ziping-left-panel-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 4px 8px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--background-primary);
+    flex-shrink: 0;
+}
+
+.ziping-left-panel-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0 6px;
+    border-radius: 4px;
+}
+
+.ziping-left-panel-close:hover {
+    color: var(--text-normal);
+    background-color: var(--background-modifier-hover);
+}
+
+.ziping-left-panel .ziping-content-wrapper {
+    padding: 8px;
+}
+
+.ziping-left-panel-hidden {
+    display: none !important;
+}
+
+/* 左面板激活时，归零 cm-editor 默认 padding */
+.view-content[data-ziping-left-panel] .cm-editor {
+    padding-left: 0 !important;
+}

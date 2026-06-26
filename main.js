@@ -3510,7 +3510,7 @@ __export(main_exports, {
   default: () => ZipingPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian6 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 
 // src/settings.ts
 var import_obsidian = require("obsidian");
@@ -34155,6 +34155,9 @@ function initializeStyleUtils() {
   StyleModule.mount(document, styleModule);
 }
 
+// src/ui/ZipingCodeBlockRenderer.ts
+var import_obsidian6 = require("obsidian");
+
 // src/ui/zipingShadowStyles.ts
 var SHADOW_BAZI_CSS = `
 /* \u2500\u2500 Host: \u5F71\u5B50\u5BBF\u4E3B \u2500\u2500 */
@@ -34559,6 +34562,8 @@ var SHADOW_BAZI_CSS = `
 // src/ui/ZipingCodeBlockRenderer.ts
 var ZipingCodeBlockRenderer = class {
   constructor() {
+    // 追踪挂载到 body 的左侧面板，防止 el 复用/重建时残留
+    this.leftPanels = /* @__PURE__ */ new WeakMap();
     this.paipan = new Paipan(false);
     this.baziService = new BaziService(this.paipan);
     this.identificationService = new IdentificationService(
@@ -34567,12 +34572,30 @@ var ZipingCodeBlockRenderer = class {
       this.baziService
     );
   }
-  async render(source, el, _ctx) {
+  async render(source, el, ctx) {
+    const old = this.leftPanels.get(el);
+    if (old) {
+      this.cleanupPanel(el, old);
+    }
     const lines = source.split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("//") && !l.startsWith("#"));
     if (lines.length === 0) {
       el.createEl("p", { text: "\u6392\u76D8\u7801\u4E3A\u7A7A" });
       return;
     }
+    const isLeftMode = lines[0] === "left";
+    const paiPanLines = isLeftMode ? lines.slice(1) : lines;
+    if (paiPanLines.length === 0) {
+      el.createEl("p", { text: "\u6392\u76D8\u7801\u4E3A\u7A7A" });
+      return;
+    }
+    if (isLeftMode) {
+      this.renderLeftMode(el, paiPanLines, ctx);
+    } else {
+      this.renderNormalMode(el, paiPanLines);
+    }
+  }
+  // 普通内联渲染模式：沿用原有的 inline-flex 布局
+  renderNormalMode(el, lines) {
     const embedBlock = el.parentElement;
     if (embedBlock) {
       embedBlock.addClass("ziping-embed-block-align");
@@ -34581,6 +34604,109 @@ var ZipingCodeBlockRenderer = class {
     for (const code of lines) {
       void this.renderSingleCode(code, wrapper);
     }
+  }
+  // 左侧固定排盘视图：position:fixed，位于正文左侧水槽
+  // 同时增大 view-content 的 padding-left，将正文往右推
+  // ResizeObserver 跟踪侧边栏折叠/展开时 view-content 位置变化
+  // ctx.addChild 注册 Obsidian 生命周期：切换文档 / 重新渲染时自动清理面板
+  renderLeftMode(el, lines, ctx) {
+    el.addClass("ziping-left-mode");
+    const prev = this.leftPanels.get(el);
+    if (prev) {
+      prev.remove();
+    }
+    const panel = document.body.appendChild(document.createElement("div"));
+    panel.className = "ziping-left-panel";
+    this.leftPanels.set(el, panel);
+    panel.__zipingEl = el;
+    const wrapper = panel.createDiv("ziping-content-wrapper");
+    const cleanupChild = new import_obsidian6.MarkdownRenderChild(el);
+    cleanupChild.onunload = () => {
+      this.cleanupPanel(el, panel);
+    };
+    ctx.addChild(cleanupChild);
+    let wasHidden = false;
+    let stopPolling = false;
+    const poll = () => {
+      if (stopPolling || !document.body.contains(panel)) return;
+      const isHidden = !el.isConnected || el.offsetParent === null;
+      if (isHidden && !wasHidden) {
+        panel.addClass("ziping-left-panel-hidden");
+        const vc = el.closest(".view-content");
+        if (vc) {
+          vc.style.paddingLeft = "";
+          delete vc.dataset.zipingLeftPanel;
+        }
+        wasHidden = true;
+      } else if (!isHidden && wasHidden) {
+        panel.removeClass("ziping-left-panel-hidden");
+        wasHidden = false;
+        this.positionPanel(panel);
+      }
+      requestAnimationFrame(poll);
+    };
+    requestAnimationFrame(poll);
+    panel.__zipingPollStop = () => {
+      stopPolling = true;
+    };
+    void (async () => {
+      await Promise.all(lines.map((code) => this.renderSingleCode(code, wrapper)));
+      this.positionPanel(panel);
+      const vc = document.querySelector(".workspace-split.mod-vertical.mod-root .view-content");
+      if (vc && document.body.contains(panel)) {
+        const roVc = new ResizeObserver(() => {
+          if (document.body.contains(panel)) {
+            this.positionPanel(panel);
+          } else {
+            roVc.disconnect();
+          }
+        });
+        roVc.observe(vc);
+        panel.__zipingRoVc = roVc;
+      }
+      const roPanel = new ResizeObserver(() => {
+        if (!document.body.contains(panel)) {
+          roPanel.disconnect();
+          return;
+        }
+        this.positionPanel(panel);
+      });
+      roPanel.observe(panel);
+      panel.__zipingRoPanel = roPanel;
+    })();
+  }
+  cleanupPanel(el, panel) {
+    const pollStop = panel.__zipingPollStop;
+    if (pollStop) pollStop();
+    const roVc = panel.__zipingRoVc;
+    if (roVc) roVc.disconnect();
+    const roPanel = panel.__zipingRoPanel;
+    if (roPanel) roPanel.disconnect();
+    panel.remove();
+    el.removeClass("ziping-left-mode");
+    this.leftPanels.delete(el);
+    const vc = document.querySelector(".workspace-split.mod-vertical.mod-root .view-content");
+    if (vc) {
+      vc.style.paddingLeft = "";
+      delete vc.dataset.zipingLeftPanel;
+    }
+  }
+  // 测量 el 所在 view-content 的真实 viewport 位置
+  // 使用 el.closest 而非全局 querySelector，避免选中隐藏标签页的 view-content
+  positionPanel(panel) {
+    const el = panel.__zipingEl;
+    const vc = el?.closest(".view-content");
+    if (!vc || !document.body.contains(panel)) return;
+    const rect = vc.getBoundingClientRect();
+    panel.style.left = rect.left + "px";
+    const ph = panel.offsetHeight;
+    panel.style.top = rect.top + Math.max((rect.height - ph) / 2, 20) + "px";
+    panel.style.maxHeight = rect.height - 40 + "px";
+    const pw = panel.offsetWidth;
+    if (pw > 0) {
+      vc.style.paddingLeft = pw + 8 + "px";
+    }
+    vc.dataset.zipingLeftPanel = "active";
   }
   // 渲染单个排盘码到指定的父容器中
   async renderSingleCode(code, parent) {
@@ -34727,7 +34853,7 @@ var ZipingCodeBlockRenderer = class {
 };
 
 // src/main.ts
-var ZipingPlugin = class extends import_obsidian6.Plugin {
+var ZipingPlugin = class extends import_obsidian7.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -34801,13 +34927,13 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
       const folder = this.app.vault.getAbstractFileByPath(basePath);
       if (!folder) {
         await this.app.vault.createFolder(basePath);
-        new import_obsidian6.Notice(`\u5DF2\u521B\u5EFA\u6587\u4EF6\u5939: ${basePath}`);
+        new import_obsidian7.Notice(`\u5DF2\u521B\u5EFA\u6587\u4EF6\u5939: ${basePath}`);
       }
       const content = this.formatBaziToMarkdown(title, data);
       await this.app.vault.create(filePath, content);
-      new import_obsidian6.Notice(`\u5DF2\u4FDD\u5B58\u5230 ${filePath}`);
+      new import_obsidian7.Notice(`\u5DF2\u4FDD\u5B58\u5230 ${filePath}`);
     } catch (error) {
-      new import_obsidian6.Notice("\u4FDD\u5B58\u5931\u8D25: " + error.message);
+      new import_obsidian7.Notice("\u4FDD\u5B58\u5931\u8D25: " + error.message);
     }
   }
   formatBaziToMarkdown(title, data) {

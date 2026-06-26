@@ -183,7 +183,7 @@ export default class ZipingPlugin extends Plugin {
 			lines.push(`${genderLabel}造：${yearGan}${yearZhi}年、${monthGan}${monthZhi}月、${dayGan}${dayZhi}日、${hourGan}${hourZhi}时`);
 			lines.push('');
 
-			// 输出 ziping 代码块，替代十神/天干/地支行
+			// 输出 ziping 代码块
 			lines.push('```ziping');
 			lines.push(paiPanCode);
 			lines.push('```');

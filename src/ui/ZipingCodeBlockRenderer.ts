@@ -2,7 +2,7 @@
 // 处理 ```ziping 代码块，复刻侧边栏排盘视图的完整渲染，支持交互切换
 // 使用 Shadow DOM 完全隔离主题样式渗透
 // IdentificationService constructor requires App type, but code block renderer has no App access
-import { MarkdownPostProcessorContext } from 'obsidian';
+import { Component, MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
 import { Paipan } from '../Paipan';
 import { BaziService } from '../services/BaziService';
 import { IdentificationService } from '../services/IdentificationService';
@@ -18,6 +18,8 @@ export class ZipingCodeBlockRenderer {
     private paipan: Paipan;
     private baziService: BaziService;
     private identificationService: IdentificationService;
+    // 追踪挂载到 body 的左侧面板，防止 el 复用/重建时残留
+    private leftPanels = new WeakMap<HTMLElement, HTMLElement>();
 
     constructor() {
         this.paipan = new Paipan(false);
@@ -29,7 +31,13 @@ export class ZipingCodeBlockRenderer {
         );
     }
 
-    async render(source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext): Promise<void> {
+    async render(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): Promise<void> {
+        // 清理该 el 上残留的左面板（切换标签页时 Obsidian 可能复用 el）
+        const old = this.leftPanels.get(el);
+        if (old) {
+            this.cleanupPanel(el, old);
+        }
+
         const lines = source.split('\n')
             .map(l => l.trim())
             .filter(l => l.length > 0 && !l.startsWith('//') && !l.startsWith('#'));
@@ -39,17 +47,152 @@ export class ZipingCodeBlockRenderer {
             return;
         }
 
-        // 外层自适应宽度
+        const isLeftMode = lines[0] === 'left';
+        const paiPanLines = isLeftMode ? lines.slice(1) : lines;
+
+        if (paiPanLines.length === 0) {
+            el.createEl('p', { text: '排盘码为空' });
+            return;
+        }
+
+        if (isLeftMode) {
+            this.renderLeftMode(el, paiPanLines, ctx);
+        } else {
+            this.renderNormalMode(el, paiPanLines);
+        }
+    }
+
+    // 普通内联渲染模式：沿用原有的 inline-flex 布局
+    private renderNormalMode(el: HTMLElement, lines: string[]): void {
         const embedBlock = el.parentElement;
         if (embedBlock) {
             embedBlock.addClass('ziping-embed-block-align');
         }
-
-        // inline-flex 包裹层：单排盘时宽度随内容收缩，多排盘时横向排列换行
         const wrapper = el.createDiv('ziping-content-wrapper');
         for (const code of lines) {
             void this.renderSingleCode(code, wrapper);
         }
+    }
+
+    // 左侧固定排盘视图：position:fixed，位于正文左侧水槽
+    // 同时增大 view-content 的 padding-left，将正文往右推
+    // ResizeObserver 跟踪侧边栏折叠/展开时 view-content 位置变化
+    // ctx.addChild 注册 Obsidian 生命周期：切换文档 / 重新渲染时自动清理面板
+    private renderLeftMode(el: HTMLElement, lines: string[], ctx: MarkdownPostProcessorContext): void {
+        el.addClass('ziping-left-mode');
+        const prev = this.leftPanels.get(el);
+        if (prev) { prev.remove(); }
+
+        const panel = document.body.appendChild(document.createElement('div'));
+        panel.className = 'ziping-left-panel';
+        this.leftPanels.set(el, panel);
+        // 存储 el 引用，供 ResizeObserver 回调中 positionPanel 使用
+        (panel as any).__zipingEl = el;
+
+        const wrapper = panel.createDiv('ziping-content-wrapper');
+
+        // ── Obsidian 生命周期绑定 ──
+        const cleanupChild = new MarkdownRenderChild(el);
+        (cleanupChild as any).onunload = () => {
+            this.cleanupPanel(el, panel);
+        };
+        ctx.addChild(cleanupChild);
+
+        // ── rAF 轮询：标签页切换 → 隐藏面板；切回 → 显示面板 ──
+        // 不 destroy 面板，因为 Obsidian 切回时不会重新调用代码块渲染器
+        let wasHidden = false;
+        let stopPolling = false;
+        const poll = () => {
+            if (stopPolling || !document.body.contains(panel)) return;
+            const isHidden = !el.isConnected || el.offsetParent === null;
+            if (isHidden && !wasHidden) {
+                // 标签页切走 → 隐藏面板，恢复正文内边距
+                panel.addClass('ziping-left-panel-hidden');
+                const vc = el.closest('.view-content') as HTMLElement | null;
+                if (vc) {
+                    vc.style.paddingLeft = '';
+                    delete vc.dataset.zipingLeftPanel;
+                }
+                wasHidden = true;
+            } else if (!isHidden && wasHidden) {
+                // 标签页切回 → 显示面板，重新定位（会重设 paddingLeft）
+                panel.removeClass('ziping-left-panel-hidden');
+                wasHidden = false;
+                this.positionPanel(panel);
+            }
+            requestAnimationFrame(poll);
+        };
+        requestAnimationFrame(poll);
+        (panel as any).__zipingPollStop = () => { stopPolling = true; };
+
+        // ── 异步渲染内容 ──
+        void (async () => {
+            await Promise.all(lines.map(code => this.renderSingleCode(code, wrapper)));
+            this.positionPanel(panel);
+
+            // 监听 view-content 尺寸/位置变化（侧边栏折叠、窗口缩放）
+            const vc = document.querySelector('.workspace-split.mod-vertical.mod-root .view-content') as HTMLElement | null;
+            if (vc && document.body.contains(panel)) {
+                const roVc = new ResizeObserver(() => {
+                    if (document.body.contains(panel)) {
+                        this.positionPanel(panel);
+                    } else {
+                        roVc.disconnect();
+                    }
+                });
+                roVc.observe(vc);
+                (panel as any).__zipingRoVc = roVc;
+            }
+
+            // 监听面板自身尺寸变化（展开/折叠流月等），动态调整位置 + 正文 padding
+            const roPanel = new ResizeObserver(() => {
+                if (!document.body.contains(panel)) {
+                    roPanel.disconnect();
+                    return;
+                }
+                this.positionPanel(panel);
+            });
+            roPanel.observe(panel);
+            (panel as any).__zipingRoPanel = roPanel;
+        })();
+    }
+
+    private cleanupPanel(el: HTMLElement, panel: HTMLElement): void {
+        // 停止 rAF 轮询
+        const pollStop = (panel as any).__zipingPollStop as (() => void) | undefined;
+        if (pollStop) pollStop();
+        // 断开 Ro 监听
+        const roVc = (panel as any).__zipingRoVc as ResizeObserver | undefined;
+        if (roVc) roVc.disconnect();
+        const roPanel = (panel as any).__zipingRoPanel as ResizeObserver | undefined;
+        if (roPanel) roPanel.disconnect();
+
+        panel.remove();
+        el.removeClass('ziping-left-mode');
+        this.leftPanels.delete(el);
+        const vc = document.querySelector('.workspace-split.mod-vertical.mod-root .view-content') as HTMLElement | null;
+        if (vc) {
+            vc.style.paddingLeft = '';
+            delete vc.dataset.zipingLeftPanel;
+        }
+    }
+
+    // 测量 el 所在 view-content 的真实 viewport 位置
+    // 使用 el.closest 而非全局 querySelector，避免选中隐藏标签页的 view-content
+    private positionPanel(panel: HTMLElement): void {
+        const el = (panel as any).__zipingEl as HTMLElement | undefined;
+        const vc = el?.closest('.view-content') as HTMLElement | null;
+        if (!vc || !document.body.contains(panel)) return;
+        const rect = vc.getBoundingClientRect();
+        panel.style.left = rect.left + 'px';
+        const ph = panel.offsetHeight;
+        panel.style.top = (rect.top + Math.max((rect.height - ph) / 2, 20)) + 'px';
+        panel.style.maxHeight = (rect.height - 40) + 'px';
+        const pw = panel.offsetWidth;
+        if (pw > 0) {
+            vc.style.paddingLeft = (pw + 8) + 'px';
+        }
+        vc.dataset.zipingLeftPanel = 'active';
     }
 
     // 渲染单个排盘码到指定的父容器中
