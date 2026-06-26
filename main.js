@@ -33530,6 +33530,881 @@ var ResultDisplay = class {
   }
 };
 
+// src/ui/zipingShadowStyles.ts
+var SHADOW_BAZI_CSS = `
+/* \u2500\u2500 Host: \u5F71\u5B50\u5BBF\u4E3B \u2500\u2500 */
+:host {
+    display: block;
+}
+
+/* \u2500\u2500 Root container: \u5C4F\u853D\u6240\u6709\u4ECE light-DOM \u7EE7\u627F\u7684\u6392\u7248\u5C5E\u6027 \u2500\u2500 */
+.bazi-result-container {
+    width: auto;
+    padding: 6px;
+    display: inline-block;
+    line-height: 1.25;
+    font-size: 15px;
+    color: var(--text-normal);
+    font-family: var(--font-text);
+    text-align: start;
+    letter-spacing: normal;
+    word-spacing: normal;
+}
+
+/* \u2500\u2500 Element-level \u91CD\u7F6E \u2500\u2500 */
+.bazi-result-container p {
+    margin: 1px 0;
+    font-size: inherit;
+    line-height: 1.25;
+}
+.bazi-result-container span {
+    font-size: inherit;
+}
+.bazi-result-container td {
+    font-size: inherit;
+    line-height: 1.0;
+}
+.bazi-result-container th {
+    font-size: inherit;
+    line-height: 1.15;
+}
+.bazi-result-container button {
+    font-size: inherit;
+    line-height: 1.1;
+}
+
+/* \u2500\u2500 Table \u91CD\u7F6E \u2500\u2500 */
+.bazi-result-container table {
+    width: min-content;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #ccc;
+    white-space: nowrap;
+    background-color: transparent;
+    font-size: inherit;
+    margin: 0;
+}
+.bazi-result-container tr {
+    background-color: transparent;
+}
+.bazi-result-container tr:nth-child(even) {
+    background-color: transparent;
+}
+.bazi-result-container tr:nth-child(odd) {
+    background-color: transparent;
+}
+.bazi-result-container th,
+.bazi-result-container td {
+    border: none;
+    padding: 6px 6px;
+    text-align: center;
+    line-height: 1;
+}
+.bazi-result-container th {
+    background-color: transparent;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+}
+.bazi-result-container tr td:first-child {
+    font-weight: bold;
+    background-color: transparent;
+    border-right: 1px solid #ccc;
+}
+
+/* \u2500\u2500 \u5929\u5E72\u884C\uFF0F\u5730\u652F\u884C \u2500\u2500 */
+.bazi-result-container tr:nth-child(3) td:not(:first-child) {
+    background-color: rgba(0, 0, 0, 0.03);
+    font-weight: 600;
+    font-size: 27px;
+    font-family: "\u6C47\u6587\u6B63\u6977", "\u65B9\u6B63\u6977\u4F53", "\u534E\u6587\u6977\u4F53", "KaiTi", "STKaiti", "\u6977\u4F53", serif;
+    line-height: 1.1;
+}
+.bazi-result-container tr:nth-child(4) td:not(:first-child) {
+    background-color: rgba(0, 0, 0, 0.03);
+    font-weight: 600;
+    font-size: 27px;
+    font-family: "\u6C47\u6587\u6B63\u6977", "\u65B9\u6B63\u6977\u4F53", "\u534E\u6587\u6977\u4F53", "KaiTi", "STKaiti", "\u6977\u4F53", serif;
+    line-height: 1.1;
+}
+
+.bazi-result-container .bazi-table tr:nth-child(3) td,
+.bazi-result-container .bazi-table th:nth-child(3) td,
+.bazi-result-container .bazi-table tr:nth-child(4) td,
+.bazi-result-container .bazi-table th:nth-child(4) td {
+    padding: 8px 8px;
+}
+.bazi-result-container .ziping-table-cell.ziping-border-left {
+    border-left: 1px solid #ccc;
+}
+
+/* \u2500\u2500 \u5E72\u652F\u5386\u884C \u2500\u2500 */
+.bazi-result-container .gzh-row {
+    display: flex;
+    gap: 0px;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 5px 0px;
+}
+.bazi-result-container .gzh-text {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.bazi-result-container .gzh-row .hour-adjust-btn {
+    padding: 2px 8px;
+    min-width: auto;
+    height: auto;
+    font-size: 12px;
+    background-color: var(--background-secondary);
+    border-radius: 0;
+    box-shadow: none;
+    outline: 1px solid #ccc;
+}
+.bazi-result-container .hour-adjust-btn:hover {
+    color: var(--interactive-normal);
+    background-color: var(--interactive-accent, #e0e0e0);
+}
+
+/* \u2500\u2500 \u65F6\u95F4\u4FE1\u606F \u2500\u2500 */
+.bazi-result-container .bazi-time-info p {
+    margin: 5px 0;
+    margin-top: 1px;
+}
+
+/* \u2500\u2500 \u5927\u8FD0\u6BB5\u843D \u2500\u2500 */
+.bazi-result-container .dayun-info p {
+    margin: 6px 0;
+}
+
+/* \u2500\u2500 \u5927\u8FD0\uFF0F\u6D41\u5E74\uFF0F\u6D41\u6708\u5217\u8868\u5BB9\u5668 \u2500\u2500 */
+.bazi-result-container .dayun-list,
+.bazi-result-container .liunian-list,
+.bazi-result-container .liuyue-list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    margin-bottom: 6px;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* \u2500\u2500 \u5927\u8FD0\uFF0F\u6D41\u5E74\uFF0F\u6D41\u6708\u6309\u94AE \u2500\u2500 */
+.bazi-result-container .dayun-list .dayun-btn,
+.bazi-result-container .liunian-list .liunian-btn,
+.bazi-result-container .liuyue-list .liuyue-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 6px;
+    min-width: 41px;
+    height: auto;
+    border: none;
+    background-color: var(--background-primary);
+    line-height: 1.3;
+    border-radius: 0;
+    box-shadow: none !important;
+}
+.bazi-result-container .dayun-list .dayun-btn:hover,
+.bazi-result-container .liunian-list .liunian-btn:hover,
+.bazi-result-container .liuyue-list .liuyue-btn:hover {
+    background-color: var(--background-secondary-alt);
+}
+
+/* \u2500\u2500 \u5927\u8FD0\u6309\u94AE\u5185\u90E8 \u2500\u2500 */
+.bazi-result-container .dayun-year {
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+}
+.bazi-result-container .dayun-age {
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+}
+.bazi-result-container .dayun-gan,
+.bazi-result-container .dayun-zhi {
+    font-size: 14px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+/* \u2500\u2500 \u6D41\u5E74\u6309\u94AE\u5185\u90E8 \u2500\u2500 */
+.bazi-result-container .liunian-year {
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+}
+.bazi-result-container .liunian-gan,
+.bazi-result-container .liunian-zhi {
+    font-size: 14px;
+    line-height: 1.3;
+    margin: 0;
+}
+.bazi-result-container .liunian-shishen {
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+    opacity: 0.8;
+}
+.bazi-result-container .liunian-row {
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 2px 0;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+/* \u2500\u2500 \u6D41\u6708\u6309\u94AE\u5185\u90E8 \u2500\u2500 */
+.bazi-result-container .liuyue-name {
+    font-size: 12px;
+    line-height: 1.2;
+    margin: 0;
+    font-weight: 500;
+}
+.bazi-result-container .liuyue-date {
+    font-size: 10px;
+    line-height: 1.2;
+    margin: 0;
+    opacity: 0.8;
+}
+.bazi-result-container .liuyue-gan,
+.bazi-result-container .liuyue-zhi {
+    font-size: 14px;
+    line-height: 1.3;
+    margin: 0;
+}
+.bazi-result-container .liuyue-shishen {
+    font-size: 11px;
+    line-height: 1.2;
+    margin: 0;
+    opacity: 0.7;
+}
+
+/* \u2500\u2500 \u6309\u94AE\u9009\u4E2D\u72B6\u6001 \u2500\u2500 */
+.bazi-result-container .dayun-btn.is-selected,
+.bazi-result-container .liunian-btn.is-selected,
+.bazi-result-container .liuyue-btn.is-selected {
+    border-color: var(--interactive-accent, #7d5fff);
+    font-weight: 500;
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+    .bazi-result-container .dayun-btn.is-selected,
+    .bazi-result-container .liunian-btn.is-selected,
+    .bazi-result-container .liuyue-btn.is-selected {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+:host-context([data-theme="dark"]) .bazi-result-container .dayun-btn.is-selected,
+:host-context([data-theme="dark"]) .bazi-result-container .liunian-btn.is-selected,
+:host-context([data-theme="dark"]) .bazi-result-container .liuyue-btn.is-selected {
+    background-color: var(--button-selected-background, rgba(125, 95, 255, 0.15));
+}
+
+/* \u2500\u2500 \u4E94\u884C\u989C\u8272 \u2014 \u9ED8\u8BA4\uFF08\u6DF1\u8272\uFF09 \u2500\u2500 */
+.c-\u6728 { color: #4caf50 !important; font-weight: 600 !important; }
+.c-\u706B { color: #f44336 !important; font-weight: 600 !important; }
+.c-\u571F { color: #cf7543 !important; font-weight: 600 !important; }
+.c-\u91D1 { color: #ffb74d !important; font-weight: 600 !important; }
+.c-\u6C34 { color: #42a5f5 !important; font-weight: 600 !important; }
+
+/* \u2500\u2500 \u4E94\u884C\u989C\u8272 \u2014 \u6D45\u8272 \u2500\u2500 */
+:host-context(.theme-light) .c-\u6728 { color: #2b8a3e !important; }
+:host-context(.theme-light) .c-\u706B { color: #c92a2a !important; }
+:host-context(.theme-light) .c-\u571F { color: #846358 !important; }
+:host-context(.theme-light) .c-\u91D1 { color: #f08c00 !important; }
+:host-context(.theme-light) .c-\u6C34 { color: #1971c2 !important; }
+
+/* \u2500\u2500 \u7EB3\u97F3\u4E94\u884C \u2014 \u6DF1\u8272\uFF08\u7B2C 8 \u884C\uFF09 \u2500\u2500 */
+.bazi-result-container tr:nth-child(8) .c-\u6728 { color: #81c784 !important; }
+.bazi-result-container tr:nth-child(8) .c-\u706B { color: #e57373 !important; }
+.bazi-result-container tr:nth-child(8) .c-\u571F { color: #ba68c8 !important; }
+.bazi-result-container tr:nth-child(8) .c-\u91D1 { color: #ffb74d !important; }
+.bazi-result-container tr:nth-child(8) .c-\u6C34 { color: #64b5f6 !important; }
+
+:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u6728 { color: #4caf50 !important; }
+:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u706B { color: #ef5350 !important; }
+:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u571F { color: #ab47bc !important; }
+:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u91D1 { color: #ff9800 !important; }
+:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u6C34 { color: #2196f3 !important; }
+
+/* \u2500\u2500 Switch \u590D\u9009\u6846 \u2500\u2500 */
+.bazi-result-container .ziping-switch-checkbox {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 36px !important;
+    height: 20px !important;
+    background-color: #ccc !important;
+    border-radius: 20px !important;
+    position: relative !important;
+    transition: background-color 0.2s;
+    outline: none !important;
+    border: none !important;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.bazi-result-container .ziping-switch-checkbox::before {
+    content: "" !important;
+    position: absolute !important;
+    width: 16px;
+    height: 16px;
+    border-radius: 50% !important;
+    background-color: white;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s;
+}
+
+.bazi-result-container .ziping-switch-checkbox:checked:after {
+    content: none !important;
+}
+
+.bazi-result-container .ziping-switch-checkbox:checked {
+    background-color: var(--interactive-accent) !important;
+    background-image: none !important;
+}
+
+.bazi-result-container .ziping-switch-checkbox:checked::before {
+    transform: translateX(16px) !important;
+}
+
+/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+/* \u5DE5\u5177\u7C7B\uFF08\u4FDD\u6301 (0,1,0) \u7279\u5F02\u6027 \u2014 \u4E0D\u52A0 .bazi-result-container \u524D\u7F00\uFF09 */
+/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+
+/* \u2500\u2500 \u6765\u81EA styleUtils.ts \u2500\u2500 */
+.ziping-flex { display: flex; }
+.ziping-flex-column { flex-direction: column; }
+.ziping-flex-end { display: flex; justify-content: flex-end; }
+.ziping-flex-align-center { display: flex; align-items: center; }
+.ziping-flex-gap-0 { display: flex; gap: 0px; align-items: center; }
+.ziping-flex-gap-0-mb-6-0-6-0 { display: flex; gap: 0px; margin: 6px 0px 6px 0px; align-items: center; }
+.ziping-flex-gap-0-justify-end { display: flex; gap: 0px; align-items: center; justify-content: flex-end; }
+.ziping-gap-0 { gap: 0px; }
+.ziping-gap-10 { gap: 10px; }
+.ziping-margin-0 { margin: 0px; }
+.ziping-padding-0 { padding: 0px; }
+.ziping-width-100 { width: 100%; }
+.ziping-border-none { border: none; }
+.ziping-boxShadow-none { box-shadow: none; }
+.ziping-border-radius-0 { border-radius: 0px; }
+.ziping-border-radius-5 { border-radius: 5px; }
+.ziping-border-left { border-left: 1px solid #ccc; }
+.ziping-max-height-300 { max-height: 300px; }
+.ziping-overflow-y-auto { overflow-y: auto; }
+.ziping-font-bold { font-weight: bold; }
+.ziping-font-weight-600 { font-weight: 600; }
+.ziping-table-style { width: 100%; border-collapse: collapse; margin-top: 5px; }
+.ziping-table-header { border: 1px solid #ccc; padding: 6px 8px; background-color: #f5f5f5; }
+.ziping-table-cell { border: 1px solid #ccc; padding: 6px 8px; text-align: center; }
+.ziping-table-cell-bold { padding: 6px 8px; font-weight: bold; text-align: center; }
+.ziping-button-active { background-color: var(--background-secondary); color: var(--interactive-accent); }
+.ziping-button-inactive { background-color: #f1f1f1; color: black; }
+.ziping-list-style-none { list-style-type: none; padding: 0; }
+.ziping-list-item-padding { padding: 8px 0; }
+.ziping-margin-top-20 { margin-top: 20px; }
+.ziping-margin-bottom-10 { margin-bottom: 10px; }
+.ziping-border-1-ccc { border: 1px solid #ccc; }
+.ziping-transition-bg { cursor: pointer; transition: background-color 0.2s; }
+.ziping-outline-1-ccc { outline: 1px solid #ccc; }
+.ziping-background-f5f5f5 { background-color: #f5f5f5; }
+.ziping-flex-wrap { flex-wrap: wrap; }
+.ziping-flex-nowrap { flex-wrap: nowrap; }
+.ziping-display-none { display: none; }
+
+/* \u2500\u2500 \u6765\u81EA styles.css \u7684\u989D\u5916\u5DE5\u5177\u7C7B \u2500\u2500 */
+.ziping-margin-left-10 { margin-left: 10px; }
+.ziping-margin-right-10 { margin-right: 10px; }
+.ziping-margin-left-auto { margin-left: auto; }
+
+/* \u2500\u2500 si-ling \u2500\u2500 */
+.si-ling { }
+`;
+
+// src/ui/ZipingLeftWidget.ts
+var import_view = require("@codemirror/view");
+var globalControllers = /* @__PURE__ */ new Set();
+function registerGlobalController(ctrl) {
+  globalControllers.add(ctrl);
+}
+function unregisterGlobalController(ctrl) {
+  globalControllers.delete(ctrl);
+}
+var readingModeListenerActive = false;
+function findYearAndPaiPanCodeFromNode(node) {
+  let el = node?.nodeType === 3 ? node.parentElement : node;
+  if (!el) return null;
+  const li = el.closest("li");
+  if (!li) return null;
+  const liText = li.textContent || "";
+  const yearMatch = /- [*=_~]*(\d{4})年/.exec(liText);
+  if (!yearMatch) return null;
+  const year = parseInt(yearMatch[1], 10);
+  let prev = li.previousElementSibling;
+  while (prev) {
+    const prevText = prev.textContent || "";
+    const codeMatch = /(\d{4}\.\d{2}\.\d{2}-\d{2}\.\d{2}-[YX])/.exec(prevText);
+    if (codeMatch) return { year, paiPanCode: codeMatch[1] };
+    prev = prev.previousElementSibling;
+  }
+  return null;
+}
+function onReadingModeSelectionChange() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const node = sel.anchorNode;
+  if (!node) return;
+  const viewEl = node.parentElement?.closest(".markdown-reading-view");
+  if (!viewEl) return;
+  const result = findYearAndPaiPanCodeFromNode(node);
+  if (!result) return;
+  for (const ctrl of globalControllers) {
+    if (ctrl.getPaiPanCode() === result.paiPanCode) {
+      ctrl.selectLiunianByYear(result.year);
+    }
+  }
+}
+function startReadingModeTracker() {
+  if (readingModeListenerActive) return;
+  readingModeListenerActive = true;
+  document.addEventListener("selectionchange", onReadingModeSelectionChange);
+}
+var ZIPING_BLOCK_RE = /```ziping\s*\n((?:.+\n)*?)```/g;
+function zipingLeftViewPlugin(renderCodes) {
+  return import_view.ViewPlugin.fromClass(
+    class {
+      constructor(view) {
+        this.view = view;
+        this.renderedKey = "";
+        this.requestId = 0;
+        this.observer = null;
+        this.panelObserver = null;
+        this.visibilityObserver = null;
+        this.controllers = [];
+        this.scroller = view.scrollDOM;
+        this.panel = document.createElement("div");
+        this.panel.className = "ziping-left-panel-cm";
+        this.wrapper = this.panel.createDiv("ziping-left-panel-cm-content");
+        document.body.appendChild(this.panel);
+        this.updatePosition();
+        const vc = view.dom.closest(".view-content");
+        if (vc) {
+          this.observer = new ResizeObserver(() => this.updatePosition());
+          this.observer.observe(vc);
+          this.visibilityObserver = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting && this.renderedKey) {
+                this.panel.style.display = "";
+                this.updatePosition();
+              } else if (!entry.isIntersecting) {
+                this.panel.style.display = "none";
+                this.scroller.style.paddingLeft = "";
+              }
+            }
+          });
+          this.visibilityObserver.observe(vc);
+        }
+        this.panelObserver = new ResizeObserver(() => this.pushScroller());
+        this.panelObserver.observe(this.panel);
+        this.scheduleScan();
+      }
+      update(update) {
+        if (update.docChanged || update.selectionSet || update.viewportChanged) {
+          if (update.selectionSet) {
+            this.handleCursorOnYearLine();
+          }
+          this.scheduleScan();
+        }
+      }
+      destroy() {
+        this.observer?.disconnect();
+        this.panelObserver?.disconnect();
+        this.visibilityObserver?.disconnect();
+        cancelAnimationFrame(this.requestId);
+        this.scroller.style.paddingLeft = "";
+        this.panel.remove();
+      }
+      // ── 定位：贴 .view-content 左边缘，垂直居中 ──
+      // IntersectionObserver 负责隐藏/显示。这里只做定位 + 推挤 scroller。
+      updatePosition() {
+        const vc = this.view.dom.closest(".view-content");
+        if (!vc || !document.body.contains(this.panel)) return;
+        const r = vc.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return;
+        this.panel.style.left = r.left + "px";
+        const ph = this.panel.offsetHeight || 200;
+        this.panel.style.top = r.top + Math.max((r.height - ph) / 2, 20) + "px";
+        this.panel.style.maxHeight = r.height - 40 + "px";
+        this.pushScroller();
+      }
+      // ── 将 scroller 向右推，让出面板宽度 ──
+      pushScroller() {
+        if (this.panel.style.display === "none" || !document.body.contains(this.panel)) return;
+        const pw = this.panel.offsetWidth;
+        if (pw > 0) {
+          this.scroller.style.paddingLeft = pw + "px";
+        }
+      }
+      // ── 逆向匹配：光标落在 \t- {year}年 行 → 搜索关联排盘码 → 触发流年选中 ──
+      handleCursorOnYearLine() {
+        try {
+          const pos = this.view.state.selection.main.head;
+          const line = this.view.state.doc.lineAt(pos);
+          const lineText = line.text;
+          const yearMatch = /(?:^\t|^ {2,})- [*=_~]*(\d{4})年/.exec(lineText);
+          if (!yearMatch) return;
+          const year = parseInt(yearMatch[1], 10);
+          const text = this.view.state.doc.toString();
+          const before = text.slice(0, line.from);
+          const codeRe = /(?:^\t|^ {2,})- [*=_~]*(\d{4}\.\d{2}\.\d{2}-\d{2}\.\d{2}-[YX])/gm;
+          const matches = [...before.matchAll(codeRe)];
+          if (matches.length === 0) return;
+          const paiPanCode = matches[matches.length - 1][1];
+          for (const ctrl of this.controllers) {
+            if (ctrl.getPaiPanCode() === paiPanCode) {
+              ctrl.selectLiunianByYear(year);
+            }
+          }
+          for (const ctrl of globalControllers) {
+            if (ctrl.getPaiPanCode() === paiPanCode) {
+              ctrl.selectLiunianByYear(year);
+            }
+          }
+        } catch {
+        }
+      }
+      // ── 扫描 + 渲染 ──
+      scheduleScan() {
+        cancelAnimationFrame(this.requestId);
+        this.requestId = requestAnimationFrame(() => this.scanAndRender());
+      }
+      scanAndRender() {
+        const text = this.view.state.doc.toString();
+        const blocks = findAllLeftBlocks(text);
+        if (blocks.length === 0) {
+          this.panel.style.display = "none";
+          this.scroller.style.paddingLeft = "";
+          this.renderedKey = "";
+          return;
+        }
+        const pos = this.view.state.selection.main.head;
+        const active = pickActiveBlock(blocks, pos, this.view.viewport);
+        const key = `${active.start}:${active.end}`;
+        if (key === this.renderedKey) return;
+        this.renderedKey = key;
+        this.panel.style.display = "";
+        this.wrapper.empty();
+        const paiPanCode = active.codes[0];
+        const view = this.view;
+        renderCodes(active.codes, this.wrapper, (year) => {
+          const doc = view.state.doc;
+          const text2 = doc.toString();
+          const codePattern = `(?:\\t| {2,})- [*=_~]{0,4}${escapeRegex(paiPanCode)}`;
+          const codeRe = new RegExp(codePattern, "g");
+          const codeMatch = codeRe.exec(text2);
+          if (!codeMatch) return;
+          const codeEnd = codeMatch.index + codeMatch[0].length;
+          const yearPattern = `(?:\\t| {2,})- [*=_~]{0,4}${year}\u5E74`;
+          const yearRe = new RegExp(yearPattern, "g");
+          yearRe.lastIndex = codeEnd;
+          const yearMatch = yearRe.exec(text2);
+          if (!yearMatch) return;
+          const targetPos = yearMatch.index + yearMatch[0].length;
+          view.dispatch({
+            selection: { anchor: targetPos, head: targetPos },
+            scrollIntoView: true
+          });
+        }).then((ctrls) => {
+          this.controllers = ctrls;
+          this.updatePosition();
+        });
+      }
+    }
+  );
+}
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function findAllLeftBlocks(text) {
+  const blocks = [];
+  const re = new RegExp(ZIPING_BLOCK_RE.source, "g");
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const lines = (m[1] || "").split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("//") && !l.startsWith("#"));
+    if (lines.length === 0 || lines[0] !== "left") continue;
+    blocks.push({
+      start: m.index,
+      end: m.index + m[0].length,
+      codes: lines.slice(1)
+    });
+  }
+  return blocks;
+}
+function pickActiveBlock(blocks, cursor, viewport) {
+  const inside = blocks.find((b) => cursor >= b.start && cursor <= b.end);
+  if (inside) return inside;
+  const prev = blocks.filter((b) => b.end <= cursor).pop();
+  if (prev) return prev;
+  const vpCenter = (viewport.from + viewport.to) / 2;
+  let best = blocks[0];
+  let bestScore = Infinity;
+  for (const b of blocks) {
+    const bCenter = (b.start + b.end) / 2;
+    const dist = Math.abs(bCenter - vpCenter);
+    const inViewport = b.start <= viewport.to && b.end >= viewport.from;
+    const score = dist - (inViewport ? 1e6 : 0);
+    if (score < bestScore) {
+      bestScore = score;
+      best = b;
+    }
+  }
+  return best;
+}
+
+// src/ui/ZipingCodeBlockRenderer.ts
+function findLiunianByYear(data, year) {
+  const allDayun = data.dayun.allDayun;
+  for (let di = 0; di < allDayun.length; di++) {
+    const startYear = allDayun[di].startYear;
+    for (let li = 0; li < 10; li++) {
+      if (startYear + li === year) {
+        return { dayunIndex: di, liunianIndex: li };
+      }
+    }
+  }
+  return null;
+}
+var ZipingCodeBlockRenderer = class {
+  constructor() {
+    this.paipan = new Paipan(false);
+    this.baziService = new BaziService(this.paipan);
+    this.identificationService = new IdentificationService(
+      null,
+      this.paipan,
+      this.baziService
+    );
+  }
+  // ── 阅读模式入口：registerMarkdownCodeBlockProcessor ──
+  // Live Preview 的 left 面板由 CM6 ViewPlugin（ZipingLeftWidget.ts）处理。
+  // left 模式在此处不渲染任何内容，避免与 ViewPlugin 产生双重视图。
+  async render(source, el, _ctx) {
+    const lines = source.split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("//") && !l.startsWith("#"));
+    if (lines.length === 0) {
+      el.createEl("p", { text: "\u6392\u76D8\u7801\u4E3A\u7A7A" });
+      return;
+    }
+    if (lines[0] === "left") {
+      el.empty();
+      return;
+    }
+    this.renderNormalMode(el, lines);
+  }
+  // ── CM6 ViewPlugin 调用的公开入口 ──
+  // onLiunianNavigate: 流年切换时触发，用于导航编辑器光标到文档中的对应年份行
+  // 返回 RenderController[] 供外部按年份触发流年选中
+  async renderCodesToElement(codes, parent, onLiunianNavigate) {
+    const controllers = [];
+    for (const code of codes) {
+      const ctrl = await this.renderSingleCode(code, parent, onLiunianNavigate);
+      if (ctrl) controllers.push(ctrl);
+    }
+    return controllers;
+  }
+  // ── 内联渲染 ──
+  renderNormalMode(el, lines) {
+    const embedBlock = el.parentElement;
+    if (embedBlock) {
+      embedBlock.addClass("ziping-embed-block-align");
+    }
+    const wrapper = el.createDiv("ziping-content-wrapper");
+    for (const code of lines) {
+      void this.renderSingleCode(code, wrapper);
+    }
+  }
+  // ── 单个排盘码渲染 ──
+  async renderSingleCode(code, parent, onLiunianNavigate) {
+    const parsed = this.identificationService.parsePaiPanCode(code);
+    if (!parsed.isValid) {
+      const codeBlock = parent.createEl("pre");
+      codeBlock.addClass("ziping-code-invalid");
+      codeBlock.setText(code);
+      return null;
+    }
+    try {
+      const baziData = await this.baziService.calculateBazi(
+        parsed.year,
+        parsed.month,
+        parsed.day,
+        parsed.hour,
+        parsed.minute,
+        0,
+        parsed.gender,
+        "",
+        false,
+        ""
+      );
+      const blockHost = parent.createDiv("ziping-bazi-block");
+      return this.renderSingleBaziInto(blockHost, baziData, onLiunianNavigate);
+    } catch (error) {
+      const errorEl = parent.createEl("div");
+      errorEl.addClass("ziping-error");
+      errorEl.setText(`\u6392\u76D8\u8BA1\u7B97\u5931\u8D25: ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    }
+  }
+  // ── 核心渲染：Shadow DOM + 组件 ──
+  renderSingleBaziInto(host, baziData, onLiunianNavigate) {
+    const shadow = host.attachShadow({ mode: "closed" });
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(SHADOW_BAZI_CSS);
+    shadow.adoptedStyleSheets = [sheet];
+    const innerContainer = host.createDiv("bazi-result-container");
+    shadow.appendChild(innerContainer);
+    const localBaziTable = new BaziTable(this.paipan);
+    const localDayunDisplay = new DayunDisplay(this.paipan);
+    const localLiuyueDisplay = new LiuyueDisplay(this.paipan);
+    const localResultDisplay = new ResultDisplay(this.paipan);
+    const rerender = () => {
+      innerContainer.empty();
+      this.renderComponents(
+        innerContainer,
+        baziData,
+        localBaziTable,
+        localDayunDisplay,
+        localLiuyueDisplay,
+        localResultDisplay
+      );
+      this.bindCallbacks(
+        baziData,
+        rerender,
+        localDayunDisplay,
+        localLiuyueDisplay,
+        localResultDisplay,
+        onLiunianNavigate
+      );
+    };
+    this.bindCallbacks(
+      baziData,
+      rerender,
+      localDayunDisplay,
+      localLiuyueDisplay,
+      localResultDisplay,
+      onLiunianNavigate
+    );
+    this.renderComponents(
+      innerContainer,
+      baziData,
+      localBaziTable,
+      localDayunDisplay,
+      localLiuyueDisplay,
+      localResultDisplay
+    );
+    const baziSvc = this.baziService;
+    const ctrl = {
+      selectLiunianByYear(year) {
+        const match = findLiunianByYear(baziData, year);
+        if (!match) return false;
+        baziData.selectedDayunIndex = match.dayunIndex;
+        baziData.selectedLiunianIndex = match.liunianIndex;
+        baziData.selectedLiuyueIndex = 0;
+        baziData.liuyue = baziSvc.recalculateLiuyue(baziData);
+        rerender();
+        return true;
+      },
+      getPaiPanCode() {
+        const m = String(baziData.month).padStart(2, "0");
+        const d = String(baziData.day).padStart(2, "0");
+        const h = String(baziData.hour).padStart(2, "0");
+        const min = String(baziData.minute).padStart(2, "0");
+        const g = baziData.gender === 0 ? "Y" : "X";
+        return `${baziData.year}.${m}.${d}-${h}.${min}-${g}`;
+      }
+    };
+    if (!onLiunianNavigate) {
+      registerGlobalController(ctrl);
+      const mo = new MutationObserver(() => {
+        if (!document.body.contains(host)) {
+          mo.disconnect();
+          unregisterGlobalController(ctrl);
+        }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+    }
+    return ctrl;
+  }
+  renderComponents(wrapper, baziData, baziTable, dayunDisplay, liuyueDisplay, resultDisplay) {
+    resultDisplay.displayResults(wrapper, baziData);
+    baziTable.createBaziTable(wrapper, baziData);
+    dayunDisplay.displayDayunInfo(wrapper, baziData);
+    if (baziData.showLiuyue) {
+      liuyueDisplay.displayLiuyueInfo(wrapper, baziData);
+    }
+  }
+  bindCallbacks(baziData, rerender, dayunDisplay, liuyueDisplay, resultDisplay, onLiunianNavigate) {
+    resultDisplay.setCallbacks(
+      void 0,
+      (showHourPillar) => {
+        baziData.showHourPillar = showHourPillar;
+        rerender();
+      }
+    );
+    dayunDisplay.setCallbacks(
+      (index) => {
+        baziData.selectedDayunIndex = index;
+        baziData.selectedLiunianIndex = 0;
+        baziData.selectedLiuyueIndex = 0;
+        rerender();
+      },
+      (dayunIndex, liunianIndex) => {
+        baziData.selectedDayunIndex = dayunIndex;
+        const prevLiunianIndex = baziData.selectedLiunianIndex;
+        baziData.selectedLiunianIndex = liunianIndex;
+        baziData.selectedLiuyueIndex = 0;
+        if (liunianIndex !== prevLiunianIndex) {
+          baziData.liuyue = this.baziService.recalculateLiuyue(baziData);
+        }
+        rerender();
+        if (onLiunianNavigate) {
+          let year;
+          if (dayunIndex === -1) {
+            year = baziData.year + liunianIndex;
+          } else {
+            const dayun = baziData.dayun.allDayun[dayunIndex];
+            year = (dayun?.startYear ?? baziData.year) + liunianIndex;
+          }
+          onLiunianNavigate(year);
+        }
+      },
+      () => {
+        baziData.selectedDayunIndex = -1;
+        baziData.selectedLiunianIndex = 0;
+        baziData.selectedLiuyueIndex = 0;
+        rerender();
+      },
+      (showLiuyue) => {
+        baziData.showLiuyue = showLiuyue;
+        rerender();
+      }
+    );
+    liuyueDisplay.setCallbacks(
+      (index) => {
+        baziData.selectedLiuyueIndex = index;
+        rerender();
+      }
+    );
+  }
+};
+
 // src/ui/BaziView.ts
 var PAIPAN_VIEW_TYPE = "paipan-view";
 var BaziView = class extends import_obsidian5.ItemView {
@@ -33537,6 +34412,7 @@ var BaziView = class extends import_obsidian5.ItemView {
     super(leaf);
     this.currentData = null;
     this.resultContainer = null;
+    this.globalCtrl = null;
     // 防抖控制变量
     this.refreshTimeout = null;
     this.plugin = plugin;
@@ -33604,6 +34480,10 @@ var BaziView = class extends import_obsidian5.ItemView {
     );
   }
   onClose() {
+    if (this.globalCtrl) {
+      unregisterGlobalController(this.globalCtrl);
+      this.globalCtrl = null;
+    }
     return Promise.resolve();
   }
   // 渲染主内容
@@ -33708,6 +34588,33 @@ var BaziView = class extends import_obsidian5.ItemView {
       }
     }
     this.currentData = baziData;
+    if (!this.globalCtrl) {
+      const svc = this.baziService;
+      const self = this;
+      this.globalCtrl = {
+        selectLiunianByYear(year2) {
+          if (!self.currentData) return false;
+          const match = findLiunianByYear(self.currentData, year2);
+          if (!match) return false;
+          self.currentData.selectedDayunIndex = match.dayunIndex;
+          self.currentData.selectedLiunianIndex = match.liunianIndex;
+          self.currentData.selectedLiuyueIndex = 0;
+          self.currentData.liuyue = svc.recalculateLiuyue(self.currentData);
+          self.refreshDisplay();
+          return true;
+        },
+        getPaiPanCode() {
+          const d = self.currentData;
+          const m = String(d.month).padStart(2, "0");
+          const day2 = String(d.day).padStart(2, "0");
+          const h = String(d.hour).padStart(2, "0");
+          const min = String(d.minute).padStart(2, "0");
+          const g = d.gender === 0 ? "Y" : "X";
+          return `${d.year}.${m}.${day2}-${h}.${min}-${g}`;
+        }
+      };
+      registerGlobalController(this.globalCtrl);
+    }
     if (resultContainer) {
       this.resultDisplay.displayResults(resultContainer, baziData);
       this.baziTable.createBaziTable(resultContainer, baziData);
@@ -34155,751 +35062,6 @@ function initializeStyleUtils() {
   StyleModule.mount(document, styleModule);
 }
 
-// src/ui/zipingShadowStyles.ts
-var SHADOW_BAZI_CSS = `
-/* \u2500\u2500 Host: \u5F71\u5B50\u5BBF\u4E3B \u2500\u2500 */
-:host {
-    display: block;
-}
-
-/* \u2500\u2500 Root container: \u5C4F\u853D\u6240\u6709\u4ECE light-DOM \u7EE7\u627F\u7684\u6392\u7248\u5C5E\u6027 \u2500\u2500 */
-.bazi-result-container {
-    width: auto;
-    padding: 6px;
-    display: inline-block;
-    line-height: 1.25;
-    font-size: 15px;
-    color: var(--text-normal);
-    font-family: var(--font-text);
-    text-align: start;
-    letter-spacing: normal;
-    word-spacing: normal;
-}
-
-/* \u2500\u2500 Element-level \u91CD\u7F6E \u2500\u2500 */
-.bazi-result-container p {
-    margin: 1px 0;
-    font-size: inherit;
-    line-height: 1.25;
-}
-.bazi-result-container span {
-    font-size: inherit;
-}
-.bazi-result-container td {
-    font-size: inherit;
-    line-height: 1.0;
-}
-.bazi-result-container th {
-    font-size: inherit;
-    line-height: 1.15;
-}
-.bazi-result-container button {
-    font-size: inherit;
-    line-height: 1.1;
-}
-
-/* \u2500\u2500 Table \u91CD\u7F6E \u2500\u2500 */
-.bazi-result-container table {
-    width: min-content;
-    border-collapse: collapse;
-    border-spacing: 0;
-    border: 1px solid #ccc;
-    white-space: nowrap;
-    background-color: transparent;
-    font-size: inherit;
-    margin: 0;
-}
-.bazi-result-container tr {
-    background-color: transparent;
-}
-.bazi-result-container tr:nth-child(even) {
-    background-color: transparent;
-}
-.bazi-result-container tr:nth-child(odd) {
-    background-color: transparent;
-}
-.bazi-result-container th,
-.bazi-result-container td {
-    border: none;
-    padding: 6px 6px;
-    text-align: center;
-    line-height: 1;
-}
-.bazi-result-container th {
-    background-color: transparent;
-    font-weight: bold;
-    border-bottom: 1px solid #ccc;
-}
-.bazi-result-container tr td:first-child {
-    font-weight: bold;
-    background-color: transparent;
-    border-right: 1px solid #ccc;
-}
-
-/* \u2500\u2500 \u5929\u5E72\u884C\uFF0F\u5730\u652F\u884C \u2500\u2500 */
-.bazi-result-container tr:nth-child(3) td:not(:first-child) {
-    background-color: rgba(0, 0, 0, 0.03);
-    font-weight: 600;
-    font-size: 27px;
-    font-family: "\u6C47\u6587\u6B63\u6977", "\u65B9\u6B63\u6977\u4F53", "\u534E\u6587\u6977\u4F53", "KaiTi", "STKaiti", "\u6977\u4F53", serif;
-    line-height: 1.1;
-}
-.bazi-result-container tr:nth-child(4) td:not(:first-child) {
-    background-color: rgba(0, 0, 0, 0.03);
-    font-weight: 600;
-    font-size: 27px;
-    font-family: "\u6C47\u6587\u6B63\u6977", "\u65B9\u6B63\u6977\u4F53", "\u534E\u6587\u6977\u4F53", "KaiTi", "STKaiti", "\u6977\u4F53", serif;
-    line-height: 1.1;
-}
-
-.bazi-result-container .bazi-table tr:nth-child(3) td,
-.bazi-result-container .bazi-table th:nth-child(3) td,
-.bazi-result-container .bazi-table tr:nth-child(4) td,
-.bazi-result-container .bazi-table th:nth-child(4) td {
-    padding: 8px 8px;
-}
-.bazi-result-container .ziping-table-cell.ziping-border-left {
-    border-left: 1px solid #ccc;
-}
-
-/* \u2500\u2500 \u5E72\u652F\u5386\u884C \u2500\u2500 */
-.bazi-result-container .gzh-row {
-    display: flex;
-    gap: 0px;
-    flex-wrap: nowrap;
-    align-items: center;
-    margin: 5px 0px;
-}
-.bazi-result-container .gzh-text {
-    flex: 1;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-.bazi-result-container .gzh-row .hour-adjust-btn {
-    padding: 2px 8px;
-    min-width: auto;
-    height: auto;
-    font-size: 12px;
-    background-color: var(--background-secondary);
-    border-radius: 0;
-    box-shadow: none;
-    outline: 1px solid #ccc;
-}
-.bazi-result-container .hour-adjust-btn:hover {
-    color: var(--interactive-normal);
-    background-color: var(--interactive-accent, #e0e0e0);
-}
-
-/* \u2500\u2500 \u65F6\u95F4\u4FE1\u606F \u2500\u2500 */
-.bazi-result-container .bazi-time-info p {
-    margin: 5px 0;
-    margin-top: 1px;
-}
-
-/* \u2500\u2500 \u5927\u8FD0\u6BB5\u843D \u2500\u2500 */
-.bazi-result-container .dayun-info p {
-    margin: 6px 0;
-}
-
-/* \u2500\u2500 \u5927\u8FD0\uFF0F\u6D41\u5E74\uFF0F\u6D41\u6708\u5217\u8868\u5BB9\u5668 \u2500\u2500 */
-.bazi-result-container .dayun-list,
-.bazi-result-container .liunian-list,
-.bazi-result-container .liuyue-list {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0;
-    margin-bottom: 6px;
-    width: 100%;
-    overflow-x: auto;
-}
-
-/* \u2500\u2500 \u5927\u8FD0\uFF0F\u6D41\u5E74\uFF0F\u6D41\u6708\u6309\u94AE \u2500\u2500 */
-.bazi-result-container .dayun-list .dayun-btn,
-.bazi-result-container .liunian-list .liunian-btn,
-.bazi-result-container .liuyue-list .liuyue-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    padding: 6px 6px;
-    min-width: 41px;
-    height: auto;
-    border: none;
-    background-color: var(--background-primary);
-    line-height: 1.3;
-    border-radius: 0;
-    box-shadow: none !important;
-}
-.bazi-result-container .dayun-list .dayun-btn:hover,
-.bazi-result-container .liunian-list .liunian-btn:hover,
-.bazi-result-container .liuyue-list .liuyue-btn:hover {
-    background-color: var(--background-secondary-alt);
-}
-
-/* \u2500\u2500 \u5927\u8FD0\u6309\u94AE\u5185\u90E8 \u2500\u2500 */
-.bazi-result-container .dayun-year {
-    font-size: 12px;
-    line-height: 1.3;
-    margin: 0;
-}
-.bazi-result-container .dayun-age {
-    font-weight: bold;
-    font-size: 12px;
-    line-height: 1.3;
-    margin: 0;
-}
-.bazi-result-container .dayun-gan,
-.bazi-result-container .dayun-zhi {
-    font-size: 14px;
-    line-height: 1.3;
-    margin: 0;
-}
-
-/* \u2500\u2500 \u6D41\u5E74\u6309\u94AE\u5185\u90E8 \u2500\u2500 */
-.bazi-result-container .liunian-year {
-    font-size: 12px;
-    line-height: 1.3;
-    margin: 0;
-}
-.bazi-result-container .liunian-gan,
-.bazi-result-container .liunian-zhi {
-    font-size: 14px;
-    line-height: 1.3;
-    margin: 0;
-}
-.bazi-result-container .liunian-shishen {
-    font-size: 12px;
-    line-height: 1.3;
-    margin: 0;
-    opacity: 0.8;
-}
-.bazi-result-container .liunian-row {
-    font-size: 12px;
-    line-height: 1.3;
-    margin: 2px 0;
-    text-align: center;
-    color: var(--text-muted);
-}
-
-/* \u2500\u2500 \u6D41\u6708\u6309\u94AE\u5185\u90E8 \u2500\u2500 */
-.bazi-result-container .liuyue-name {
-    font-size: 12px;
-    line-height: 1.2;
-    margin: 0;
-    font-weight: 500;
-}
-.bazi-result-container .liuyue-date {
-    font-size: 10px;
-    line-height: 1.2;
-    margin: 0;
-    opacity: 0.8;
-}
-.bazi-result-container .liuyue-gan,
-.bazi-result-container .liuyue-zhi {
-    font-size: 14px;
-    line-height: 1.3;
-    margin: 0;
-}
-.bazi-result-container .liuyue-shishen {
-    font-size: 11px;
-    line-height: 1.2;
-    margin: 0;
-    opacity: 0.7;
-}
-
-/* \u2500\u2500 \u6309\u94AE\u9009\u4E2D\u72B6\u6001 \u2500\u2500 */
-.bazi-result-container .dayun-btn.is-selected,
-.bazi-result-container .liunian-btn.is-selected,
-.bazi-result-container .liuyue-btn.is-selected {
-    border-color: var(--interactive-accent, #7d5fff);
-    font-weight: 500;
-    background-color: rgba(0, 0, 0, 0.08);
-}
-
-@media (prefers-color-scheme: dark) {
-    .bazi-result-container .dayun-btn.is-selected,
-    .bazi-result-container .liunian-btn.is-selected,
-    .bazi-result-container .liuyue-btn.is-selected {
-        background-color: rgba(255, 255, 255, 0.08);
-    }
-}
-
-:host-context([data-theme="dark"]) .bazi-result-container .dayun-btn.is-selected,
-:host-context([data-theme="dark"]) .bazi-result-container .liunian-btn.is-selected,
-:host-context([data-theme="dark"]) .bazi-result-container .liuyue-btn.is-selected {
-    background-color: var(--button-selected-background, rgba(125, 95, 255, 0.15));
-}
-
-/* \u2500\u2500 \u4E94\u884C\u989C\u8272 \u2014 \u9ED8\u8BA4\uFF08\u6DF1\u8272\uFF09 \u2500\u2500 */
-.c-\u6728 { color: #4caf50 !important; font-weight: 600 !important; }
-.c-\u706B { color: #f44336 !important; font-weight: 600 !important; }
-.c-\u571F { color: #cf7543 !important; font-weight: 600 !important; }
-.c-\u91D1 { color: #ffb74d !important; font-weight: 600 !important; }
-.c-\u6C34 { color: #42a5f5 !important; font-weight: 600 !important; }
-
-/* \u2500\u2500 \u4E94\u884C\u989C\u8272 \u2014 \u6D45\u8272 \u2500\u2500 */
-:host-context(.theme-light) .c-\u6728 { color: #2b8a3e !important; }
-:host-context(.theme-light) .c-\u706B { color: #c92a2a !important; }
-:host-context(.theme-light) .c-\u571F { color: #846358 !important; }
-:host-context(.theme-light) .c-\u91D1 { color: #f08c00 !important; }
-:host-context(.theme-light) .c-\u6C34 { color: #1971c2 !important; }
-
-/* \u2500\u2500 \u7EB3\u97F3\u4E94\u884C \u2014 \u6DF1\u8272\uFF08\u7B2C 8 \u884C\uFF09 \u2500\u2500 */
-.bazi-result-container tr:nth-child(8) .c-\u6728 { color: #81c784 !important; }
-.bazi-result-container tr:nth-child(8) .c-\u706B { color: #e57373 !important; }
-.bazi-result-container tr:nth-child(8) .c-\u571F { color: #ba68c8 !important; }
-.bazi-result-container tr:nth-child(8) .c-\u91D1 { color: #ffb74d !important; }
-.bazi-result-container tr:nth-child(8) .c-\u6C34 { color: #64b5f6 !important; }
-
-:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u6728 { color: #4caf50 !important; }
-:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u706B { color: #ef5350 !important; }
-:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u571F { color: #ab47bc !important; }
-:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u91D1 { color: #ff9800 !important; }
-:host-context(.theme-light) .bazi-result-container tr:nth-child(8) .c-\u6C34 { color: #2196f3 !important; }
-
-/* \u2500\u2500 Switch \u590D\u9009\u6846 \u2500\u2500 */
-.bazi-result-container .ziping-switch-checkbox {
-    -webkit-appearance: none !important;
-    appearance: none !important;
-    width: 36px !important;
-    height: 20px !important;
-    background-color: #ccc !important;
-    border-radius: 20px !important;
-    position: relative !important;
-    transition: background-color 0.2s;
-    outline: none !important;
-    border: none !important;
-    cursor: pointer;
-    margin: 0;
-    padding: 0;
-    vertical-align: middle;
-    flex-shrink: 0;
-}
-
-.bazi-result-container .ziping-switch-checkbox::before {
-    content: "" !important;
-    position: absolute !important;
-    width: 16px;
-    height: 16px;
-    border-radius: 50% !important;
-    background-color: white;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.2s;
-}
-
-.bazi-result-container .ziping-switch-checkbox:checked:after {
-    content: none !important;
-}
-
-.bazi-result-container .ziping-switch-checkbox:checked {
-    background-color: var(--interactive-accent) !important;
-    background-image: none !important;
-}
-
-.bazi-result-container .ziping-switch-checkbox:checked::before {
-    transform: translateX(16px) !important;
-}
-
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
-/* \u5DE5\u5177\u7C7B\uFF08\u4FDD\u6301 (0,1,0) \u7279\u5F02\u6027 \u2014 \u4E0D\u52A0 .bazi-result-container \u524D\u7F00\uFF09 */
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
-
-/* \u2500\u2500 \u6765\u81EA styleUtils.ts \u2500\u2500 */
-.ziping-flex { display: flex; }
-.ziping-flex-column { flex-direction: column; }
-.ziping-flex-end { display: flex; justify-content: flex-end; }
-.ziping-flex-align-center { display: flex; align-items: center; }
-.ziping-flex-gap-0 { display: flex; gap: 0px; align-items: center; }
-.ziping-flex-gap-0-mb-6-0-6-0 { display: flex; gap: 0px; margin: 6px 0px 6px 0px; align-items: center; }
-.ziping-flex-gap-0-justify-end { display: flex; gap: 0px; align-items: center; justify-content: flex-end; }
-.ziping-gap-0 { gap: 0px; }
-.ziping-gap-10 { gap: 10px; }
-.ziping-margin-0 { margin: 0px; }
-.ziping-padding-0 { padding: 0px; }
-.ziping-width-100 { width: 100%; }
-.ziping-border-none { border: none; }
-.ziping-boxShadow-none { box-shadow: none; }
-.ziping-border-radius-0 { border-radius: 0px; }
-.ziping-border-radius-5 { border-radius: 5px; }
-.ziping-border-left { border-left: 1px solid #ccc; }
-.ziping-max-height-300 { max-height: 300px; }
-.ziping-overflow-y-auto { overflow-y: auto; }
-.ziping-font-bold { font-weight: bold; }
-.ziping-font-weight-600 { font-weight: 600; }
-.ziping-table-style { width: 100%; border-collapse: collapse; margin-top: 5px; }
-.ziping-table-header { border: 1px solid #ccc; padding: 6px 8px; background-color: #f5f5f5; }
-.ziping-table-cell { border: 1px solid #ccc; padding: 6px 8px; text-align: center; }
-.ziping-table-cell-bold { padding: 6px 8px; font-weight: bold; text-align: center; }
-.ziping-button-active { background-color: var(--background-secondary); color: var(--interactive-accent); }
-.ziping-button-inactive { background-color: #f1f1f1; color: black; }
-.ziping-list-style-none { list-style-type: none; padding: 0; }
-.ziping-list-item-padding { padding: 8px 0; }
-.ziping-margin-top-20 { margin-top: 20px; }
-.ziping-margin-bottom-10 { margin-bottom: 10px; }
-.ziping-border-1-ccc { border: 1px solid #ccc; }
-.ziping-transition-bg { cursor: pointer; transition: background-color 0.2s; }
-.ziping-outline-1-ccc { outline: 1px solid #ccc; }
-.ziping-background-f5f5f5 { background-color: #f5f5f5; }
-.ziping-flex-wrap { flex-wrap: wrap; }
-.ziping-flex-nowrap { flex-wrap: nowrap; }
-.ziping-display-none { display: none; }
-
-/* \u2500\u2500 \u6765\u81EA styles.css \u7684\u989D\u5916\u5DE5\u5177\u7C7B \u2500\u2500 */
-.ziping-margin-left-10 { margin-left: 10px; }
-.ziping-margin-right-10 { margin-right: 10px; }
-.ziping-margin-left-auto { margin-left: auto; }
-
-/* \u2500\u2500 si-ling \u2500\u2500 */
-.si-ling { }
-`;
-
-// src/ui/ZipingCodeBlockRenderer.ts
-var ZipingCodeBlockRenderer = class {
-  constructor() {
-    this.paipan = new Paipan(false);
-    this.baziService = new BaziService(this.paipan);
-    this.identificationService = new IdentificationService(
-      null,
-      this.paipan,
-      this.baziService
-    );
-  }
-  // ── 阅读模式入口：registerMarkdownCodeBlockProcessor ──
-  // Live Preview 的 left 面板由 CM6 ViewPlugin（ZipingLeftWidget.ts）处理。
-  // left 模式在此处不渲染任何内容，避免与 ViewPlugin 产生双重视图。
-  async render(source, el, _ctx) {
-    const lines = source.split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("//") && !l.startsWith("#"));
-    if (lines.length === 0) {
-      el.createEl("p", { text: "\u6392\u76D8\u7801\u4E3A\u7A7A" });
-      return;
-    }
-    if (lines[0] === "left") {
-      el.empty();
-      return;
-    }
-    this.renderNormalMode(el, lines);
-  }
-  // ── CM6 ViewPlugin 调用的公开入口 ──
-  // onLiunianNavigate: 流年切换时触发，用于导航编辑器光标到文档中的对应年份行
-  async renderCodesToElement(codes, parent, onLiunianNavigate) {
-    for (const code of codes) {
-      await this.renderSingleCode(code, parent, onLiunianNavigate);
-    }
-  }
-  // ── 内联渲染 ──
-  renderNormalMode(el, lines) {
-    const embedBlock = el.parentElement;
-    if (embedBlock) {
-      embedBlock.addClass("ziping-embed-block-align");
-    }
-    const wrapper = el.createDiv("ziping-content-wrapper");
-    for (const code of lines) {
-      void this.renderSingleCode(code, wrapper);
-    }
-  }
-  // ── 单个排盘码渲染 ──
-  async renderSingleCode(code, parent, onLiunianNavigate) {
-    const parsed = this.identificationService.parsePaiPanCode(code);
-    if (!parsed.isValid) {
-      const codeBlock = parent.createEl("pre");
-      codeBlock.addClass("ziping-code-invalid");
-      codeBlock.setText(code);
-      return;
-    }
-    try {
-      const baziData = await this.baziService.calculateBazi(
-        parsed.year,
-        parsed.month,
-        parsed.day,
-        parsed.hour,
-        parsed.minute,
-        0,
-        parsed.gender,
-        "",
-        false,
-        ""
-      );
-      const blockHost = parent.createDiv("ziping-bazi-block");
-      this.renderSingleBaziInto(blockHost, baziData, onLiunianNavigate);
-    } catch (error) {
-      const errorEl = parent.createEl("div");
-      errorEl.addClass("ziping-error");
-      errorEl.setText(`\u6392\u76D8\u8BA1\u7B97\u5931\u8D25: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-  // ── 核心渲染：Shadow DOM + 组件 ──
-  renderSingleBaziInto(host, baziData, onLiunianNavigate) {
-    const shadow = host.attachShadow({ mode: "closed" });
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(SHADOW_BAZI_CSS);
-    shadow.adoptedStyleSheets = [sheet];
-    const innerContainer = host.createDiv("bazi-result-container");
-    shadow.appendChild(innerContainer);
-    const localBaziTable = new BaziTable(this.paipan);
-    const localDayunDisplay = new DayunDisplay(this.paipan);
-    const localLiuyueDisplay = new LiuyueDisplay(this.paipan);
-    const localResultDisplay = new ResultDisplay(this.paipan);
-    const rerender = () => {
-      innerContainer.empty();
-      this.renderComponents(
-        innerContainer,
-        baziData,
-        localBaziTable,
-        localDayunDisplay,
-        localLiuyueDisplay,
-        localResultDisplay
-      );
-      this.bindCallbacks(
-        baziData,
-        rerender,
-        localDayunDisplay,
-        localLiuyueDisplay,
-        localResultDisplay,
-        onLiunianNavigate
-      );
-    };
-    this.bindCallbacks(
-      baziData,
-      rerender,
-      localDayunDisplay,
-      localLiuyueDisplay,
-      localResultDisplay,
-      onLiunianNavigate
-    );
-    this.renderComponents(
-      innerContainer,
-      baziData,
-      localBaziTable,
-      localDayunDisplay,
-      localLiuyueDisplay,
-      localResultDisplay
-    );
-  }
-  renderComponents(wrapper, baziData, baziTable, dayunDisplay, liuyueDisplay, resultDisplay) {
-    resultDisplay.displayResults(wrapper, baziData);
-    baziTable.createBaziTable(wrapper, baziData);
-    dayunDisplay.displayDayunInfo(wrapper, baziData);
-    if (baziData.showLiuyue) {
-      liuyueDisplay.displayLiuyueInfo(wrapper, baziData);
-    }
-  }
-  bindCallbacks(baziData, rerender, dayunDisplay, liuyueDisplay, resultDisplay, onLiunianNavigate) {
-    resultDisplay.setCallbacks(
-      void 0,
-      (showHourPillar) => {
-        baziData.showHourPillar = showHourPillar;
-        rerender();
-      }
-    );
-    dayunDisplay.setCallbacks(
-      (index) => {
-        baziData.selectedDayunIndex = index;
-        baziData.selectedLiunianIndex = 0;
-        baziData.selectedLiuyueIndex = 0;
-        rerender();
-      },
-      (dayunIndex, liunianIndex) => {
-        baziData.selectedDayunIndex = dayunIndex;
-        const prevLiunianIndex = baziData.selectedLiunianIndex;
-        baziData.selectedLiunianIndex = liunianIndex;
-        baziData.selectedLiuyueIndex = 0;
-        if (liunianIndex !== prevLiunianIndex) {
-          baziData.liuyue = this.baziService.recalculateLiuyue(baziData);
-        }
-        rerender();
-        if (onLiunianNavigate) {
-          let year;
-          if (dayunIndex === -1) {
-            year = baziData.year + liunianIndex;
-          } else {
-            const dayun = baziData.dayun.allDayun[dayunIndex];
-            year = (dayun?.startYear ?? baziData.year) + liunianIndex;
-          }
-          onLiunianNavigate(year);
-        }
-      },
-      () => {
-        baziData.selectedDayunIndex = -1;
-        baziData.selectedLiunianIndex = 0;
-        baziData.selectedLiuyueIndex = 0;
-        rerender();
-      },
-      (showLiuyue) => {
-        baziData.showLiuyue = showLiuyue;
-        rerender();
-      }
-    );
-    liuyueDisplay.setCallbacks(
-      (index) => {
-        baziData.selectedLiuyueIndex = index;
-        rerender();
-      }
-    );
-  }
-};
-
-// src/ui/ZipingLeftWidget.ts
-var import_view = require("@codemirror/view");
-var ZIPING_BLOCK_RE = /```ziping\s*\n((?:.+\n)*?)```/g;
-function zipingLeftViewPlugin(renderCodes) {
-  return import_view.ViewPlugin.fromClass(
-    class {
-      constructor(view) {
-        this.view = view;
-        this.renderedKey = "";
-        this.requestId = 0;
-        this.observer = null;
-        this.panelObserver = null;
-        this.visibilityObserver = null;
-        this.scroller = view.scrollDOM;
-        this.panel = document.createElement("div");
-        this.panel.className = "ziping-left-panel-cm";
-        this.wrapper = this.panel.createDiv("ziping-left-panel-cm-content");
-        document.body.appendChild(this.panel);
-        this.updatePosition();
-        const vc = view.dom.closest(".view-content");
-        if (vc) {
-          this.observer = new ResizeObserver(() => this.updatePosition());
-          this.observer.observe(vc);
-          this.visibilityObserver = new IntersectionObserver((entries) => {
-            for (const entry of entries) {
-              if (entry.isIntersecting && this.renderedKey) {
-                this.panel.style.display = "";
-                this.updatePosition();
-              } else if (!entry.isIntersecting) {
-                this.panel.style.display = "none";
-                this.scroller.style.paddingLeft = "";
-              }
-            }
-          });
-          this.visibilityObserver.observe(vc);
-        }
-        this.panelObserver = new ResizeObserver(() => this.pushScroller());
-        this.panelObserver.observe(this.panel);
-        this.scheduleScan();
-      }
-      update(update) {
-        if (update.docChanged || update.selectionSet || update.viewportChanged) {
-          this.scheduleScan();
-        }
-      }
-      destroy() {
-        this.observer?.disconnect();
-        this.panelObserver?.disconnect();
-        this.visibilityObserver?.disconnect();
-        cancelAnimationFrame(this.requestId);
-        this.scroller.style.paddingLeft = "";
-        this.panel.remove();
-      }
-      // ── 定位：贴 .view-content 左边缘，垂直居中 ──
-      // IntersectionObserver 负责隐藏/显示。这里只做定位 + 推挤 scroller。
-      updatePosition() {
-        const vc = this.view.dom.closest(".view-content");
-        if (!vc || !document.body.contains(this.panel)) return;
-        const r = vc.getBoundingClientRect();
-        if (r.width === 0 || r.height === 0) return;
-        this.panel.style.left = r.left + "px";
-        const ph = this.panel.offsetHeight || 200;
-        this.panel.style.top = r.top + Math.max((r.height - ph) / 2, 20) + "px";
-        this.panel.style.maxHeight = r.height - 40 + "px";
-        this.pushScroller();
-      }
-      // ── 将 scroller 向右推，让出面板宽度 ──
-      pushScroller() {
-        if (this.panel.style.display === "none" || !document.body.contains(this.panel)) return;
-        const pw = this.panel.offsetWidth;
-        if (pw > 0) {
-          this.scroller.style.paddingLeft = pw + "px";
-        }
-      }
-      // ── 扫描 + 渲染 ──
-      scheduleScan() {
-        cancelAnimationFrame(this.requestId);
-        this.requestId = requestAnimationFrame(() => this.scanAndRender());
-      }
-      scanAndRender() {
-        const text = this.view.state.doc.toString();
-        const blocks = findAllLeftBlocks(text);
-        if (blocks.length === 0) {
-          this.panel.style.display = "none";
-          this.scroller.style.paddingLeft = "";
-          this.renderedKey = "";
-          return;
-        }
-        const pos = this.view.state.selection.main.head;
-        const active = pickActiveBlock(blocks, pos, this.view.viewport);
-        const key = `${active.start}:${active.end}`;
-        if (key === this.renderedKey) return;
-        this.renderedKey = key;
-        this.panel.style.display = "";
-        this.wrapper.empty();
-        const paiPanCode = active.codes[0];
-        const view = this.view;
-        void renderCodes(active.codes, this.wrapper, (year) => {
-          const doc = view.state.doc;
-          const text2 = doc.toString();
-          const codePattern = `\\t- [*=_~]{0,4}${escapeRegex(paiPanCode)}`;
-          const codeRe = new RegExp(codePattern, "g");
-          const codeMatch = codeRe.exec(text2);
-          if (!codeMatch) return;
-          const codeEnd = codeMatch.index + codeMatch[0].length;
-          const yearPattern = `\\t- [*=_~]{0,4}${year}\u5E74`;
-          const yearRe = new RegExp(yearPattern, "g");
-          yearRe.lastIndex = codeEnd;
-          const yearMatch = yearRe.exec(text2);
-          if (!yearMatch) return;
-          const targetPos = yearMatch.index + yearMatch[0].length;
-          view.dispatch({
-            selection: { anchor: targetPos, head: targetPos },
-            scrollIntoView: true
-          });
-        }).then(() => this.updatePosition());
-      }
-    }
-  );
-}
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-function findAllLeftBlocks(text) {
-  const blocks = [];
-  const re = new RegExp(ZIPING_BLOCK_RE.source, "g");
-  let m;
-  while ((m = re.exec(text)) !== null) {
-    const lines = (m[1] || "").split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("//") && !l.startsWith("#"));
-    if (lines.length === 0 || lines[0] !== "left") continue;
-    blocks.push({
-      start: m.index,
-      end: m.index + m[0].length,
-      codes: lines.slice(1)
-    });
-  }
-  return blocks;
-}
-function pickActiveBlock(blocks, cursor, viewport) {
-  const inside = blocks.find((b) => cursor >= b.start && cursor <= b.end);
-  if (inside) return inside;
-  const prev = blocks.filter((b) => b.end <= cursor).pop();
-  if (prev) return prev;
-  const vpCenter = (viewport.from + viewport.to) / 2;
-  let best = blocks[0];
-  let bestScore = Infinity;
-  for (const b of blocks) {
-    const bCenter = (b.start + b.end) / 2;
-    const dist = Math.abs(bCenter - vpCenter);
-    const inViewport = b.start <= viewport.to && b.end >= viewport.from;
-    const score = dist - (inViewport ? 1e6 : 0);
-    if (score < bestScore) {
-      bestScore = score;
-      best = b;
-    }
-  }
-  return best;
-}
-
 // src/main.ts
 var ZipingPlugin = class extends import_obsidian6.Plugin {
   constructor() {
@@ -34910,6 +35072,7 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
   async onload() {
     await this.loadSettings();
     initializeStyleUtils();
+    startReadingModeTracker();
     this.registerView(PAIPAN_VIEW_TYPE2, (leaf) => new BaziView(leaf, this));
     this.registerMarkdownCodeBlockProcessor("ziping", (source, el, ctx) => {
       void this.codeBlockRenderer.render(source, el, ctx);

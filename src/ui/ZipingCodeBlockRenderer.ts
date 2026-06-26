@@ -12,6 +12,31 @@ import { LiuyueDisplay } from './components/LiuyueDisplay';
 import { ResultDisplay } from './components/ResultDisplay';
 import { CurrentBaziData } from '../models/types';
 import { SHADOW_BAZI_CSS } from './zipingShadowStyles';
+import { registerGlobalController, unregisterGlobalController } from './ZipingLeftWidget';
+
+export interface RenderController {
+    /** 按年份选中对应流年，返回是否匹配成功 */
+    selectLiunianByYear(year: number): boolean;
+    /** 获取当前排盘码 */
+    getPaiPanCode(): string;
+}
+
+// 在 baziData 中查找指定年份对应的 dayunIndex + liunianIndex（导出供 BaziView 使用）
+export function findLiunianByYear(
+    data: CurrentBaziData,
+    year: number,
+): { dayunIndex: number; liunianIndex: number } | null {
+    const allDayun = data.dayun.allDayun;
+    for (let di = 0; di < allDayun.length; di++) {
+        const startYear = allDayun[di].startYear;
+        for (let li = 0; li < 10; li++) {
+            if (startYear + li === year) {
+                return { dayunIndex: di, liunianIndex: li };
+            }
+        }
+    }
+    return null;
+}
 
 export class ZipingCodeBlockRenderer {
 
@@ -53,14 +78,18 @@ export class ZipingCodeBlockRenderer {
 
     // ── CM6 ViewPlugin 调用的公开入口 ──
     // onLiunianNavigate: 流年切换时触发，用于导航编辑器光标到文档中的对应年份行
+    // 返回 RenderController[] 供外部按年份触发流年选中
     async renderCodesToElement(
         codes: string[],
         parent: HTMLElement,
         onLiunianNavigate?: (year: number) => void,
-    ): Promise<void> {
+    ): Promise<RenderController[]> {
+        const controllers: RenderController[] = [];
         for (const code of codes) {
-            await this.renderSingleCode(code, parent, onLiunianNavigate);
+            const ctrl = await this.renderSingleCode(code, parent, onLiunianNavigate);
+            if (ctrl) controllers.push(ctrl);
         }
+        return controllers;
     }
 
     // ── 内联渲染 ──
@@ -80,13 +109,13 @@ export class ZipingCodeBlockRenderer {
         code: string,
         parent: HTMLElement,
         onLiunianNavigate?: (year: number) => void,
-    ): Promise<void> {
+    ): Promise<RenderController | null> {
         const parsed = this.identificationService.parsePaiPanCode(code);
         if (!parsed.isValid) {
             const codeBlock = parent.createEl('pre');
             codeBlock.addClass('ziping-code-invalid');
             codeBlock.setText(code);
-            return;
+            return null;
         }
 
         try {
@@ -97,11 +126,12 @@ export class ZipingCodeBlockRenderer {
             );
 
             const blockHost = parent.createDiv('ziping-bazi-block');
-            this.renderSingleBaziInto(blockHost, baziData, onLiunianNavigate);
+            return this.renderSingleBaziInto(blockHost, baziData, onLiunianNavigate);
         } catch (error) {
             const errorEl = parent.createEl('div');
             errorEl.addClass('ziping-error');
             errorEl.setText(`排盘计算失败: ${error instanceof Error ? error.message : String(error)}`);
+            return null;
         }
     }
 
@@ -110,7 +140,7 @@ export class ZipingCodeBlockRenderer {
         host: HTMLElement,
         baziData: CurrentBaziData,
         onLiunianNavigate?: (year: number) => void,
-    ): void {
+    ): RenderController {
 
         // ═══ Shadow DOM（完全隔离主题样式）═══
         const shadow = host.attachShadow({ mode: 'closed' });
@@ -152,6 +182,43 @@ export class ZipingCodeBlockRenderer {
             localBaziTable, localDayunDisplay,
             localLiuyueDisplay, localResultDisplay
         );
+
+        // 返回控制器，供 CM6 ViewPlugin 外部触发流年选中
+        const baziSvc = this.baziService;
+        const ctrl: RenderController = {
+            selectLiunianByYear(year: number): boolean {
+                const match = findLiunianByYear(baziData, year);
+                if (!match) return false;
+                baziData.selectedDayunIndex = match.dayunIndex;
+                baziData.selectedLiunianIndex = match.liunianIndex;
+                baziData.selectedLiuyueIndex = 0;
+                baziData.liuyue = baziSvc.recalculateLiuyue(baziData);
+                rerender();
+                return true;
+            },
+            getPaiPanCode(): string {
+                const m = String(baziData.month).padStart(2, '0');
+                const d = String(baziData.day).padStart(2, '0');
+                const h = String(baziData.hour).padStart(2, '0');
+                const min = String(baziData.minute).padStart(2, '0');
+                const g = baziData.gender === 0 ? 'Y' : 'X';
+                return `${baziData.year}.${m}.${d}-${h}.${min}-${g}`;
+            },
+        };
+
+        // 非 ViewPlugin 调用（阅读模式代码块）：注册到全局控制器，host 移除时自动注销
+        if (!onLiunianNavigate) {
+            registerGlobalController(ctrl);
+            const mo = new MutationObserver(() => {
+                if (!document.body.contains(host)) {
+                    mo.disconnect();
+                    unregisterGlobalController(ctrl);
+                }
+            });
+            mo.observe(document.body, { childList: true, subtree: true });
+        }
+
+        return ctrl;
     }
 
     private renderComponents(

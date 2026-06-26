@@ -12,6 +12,9 @@ import { LiuyueDisplay } from './components/LiuyueDisplay';
 import { ResultDisplay } from './components/ResultDisplay';
 import { CurrentBaziData } from '../models/types';
 import ZipingPlugin from '../main';
+import { findLiunianByYear } from './ZipingCodeBlockRenderer';
+import type { RenderController } from './ZipingCodeBlockRenderer';
+import { registerGlobalController, unregisterGlobalController } from './ZipingLeftWidget';
 
 export const PAIPAN_VIEW_TYPE = "paipan-view";
 
@@ -19,7 +22,8 @@ export class BaziView extends ItemView {
     plugin: ZipingPlugin;
     paipan: Paipan;
     currentData: CurrentBaziData | null = null;
-    private resultContainer: HTMLDivElement | null = null; // 用于截图的结果容器
+    private resultContainer: HTMLDivElement | null = null;
+    private globalCtrl: RenderController | null = null;
 
     // 服务实例
     private baziService: BaziService;
@@ -117,7 +121,10 @@ export class BaziView extends ItemView {
     }
 
     onClose(): Promise<void> {
-        // 清理资源
+        if (this.globalCtrl) {
+            unregisterGlobalController(this.globalCtrl);
+            this.globalCtrl = null;
+        }
         return Promise.resolve();
     }
 
@@ -259,6 +266,35 @@ export class BaziView extends ItemView {
 
         // 更新当前数据
         this.currentData = baziData;
+
+        // 注册全局控制器（若尚未注册），使侧边栏参与逆向流年匹配
+        if (!this.globalCtrl) {
+            const svc = this.baziService;
+            const self = this;
+            this.globalCtrl = {
+                selectLiunianByYear(year: number): boolean {
+                    if (!self.currentData) return false;
+                    const match = findLiunianByYear(self.currentData, year);
+                    if (!match) return false;
+                    self.currentData.selectedDayunIndex = match.dayunIndex;
+                    self.currentData.selectedLiunianIndex = match.liunianIndex;
+                    self.currentData.selectedLiuyueIndex = 0;
+                    self.currentData.liuyue = svc.recalculateLiuyue(self.currentData);
+                    self.refreshDisplay();
+                    return true;
+                },
+                getPaiPanCode(): string {
+                    const d = self.currentData!;
+                    const m = String(d.month).padStart(2, '0');
+                    const day = String(d.day).padStart(2, '0');
+                    const h = String(d.hour).padStart(2, '0');
+                    const min = String(d.minute).padStart(2, '0');
+                    const g = d.gender === 0 ? 'Y' : 'X';
+                    return `${d.year}.${m}.${day}-${h}.${min}-${g}`;
+                },
+            };
+            registerGlobalController(this.globalCtrl);
+        }
 
         // 显示结果
         if (resultContainer) {

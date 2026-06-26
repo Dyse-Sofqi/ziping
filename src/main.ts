@@ -14,7 +14,7 @@ import { initializeStyleUtils } from './utils/styleUtils';
 import { IdentificationService } from './services/IdentificationService';
 import { BaziService } from './services/BaziService';
 import { ZipingCodeBlockRenderer } from './ui/ZipingCodeBlockRenderer';
-import { zipingLeftViewPlugin } from './ui/ZipingLeftWidget';
+import { zipingLeftViewPlugin, startReadingModeTracker } from './ui/ZipingLeftWidget';
 
 export default class ZipingPlugin extends Plugin {
 		settings: ZipingSettings = DEFAULT_SETTINGS;
@@ -26,6 +26,8 @@ export default class ZipingPlugin extends Plugin {
 
 			// 初始化样式工具（style-mod替代setCssProps）
 			initializeStyleUtils();
+			// 启用阅读模式光标跟踪（逆向流年匹配）
+			startReadingModeTracker();
 
 			// 注册侧边栏视图
 			this.registerView(PAIPAN_VIEW_TYPE, (leaf) => new BaziView(leaf, this));
