@@ -120,22 +120,33 @@ export function zipingLeftViewPlugin(
 
                 this.updatePosition();
 
-                // 监听 view-content 尺寸变化（侧边栏折叠）
+                // 监听 view-content 尺寸变化（侧边栏折叠 / 模式切换）
                 const vc = view.dom.closest('.view-content') as HTMLElement | null;
                 if (vc) {
-                    this.observer = new ResizeObserver(() => this.updatePosition());
+                    this.observer = new ResizeObserver(() => {
+                        if (this.isEditorActive()) {
+                            this.updatePosition();
+                            this.scheduleScan();
+                        } else {
+                            this.renderedKey = '';
+                            this.panel.style.display = 'none';
+                            this.scroller.style.paddingLeft = '';
+                        }
+                    });
                     this.observer.observe(vc);
 
                     // IntersectionObserver：检测 view-content 离开/进入视口
-                    // （设置标签页 / Style Settings 打开时 view-content 被隐藏）
                     this.visibilityObserver = new IntersectionObserver((entries) => {
                         for (const entry of entries) {
                             if (entry.isIntersecting && this.renderedKey) {
-                                // 标签页切回 → 显示面板
-                                this.panel.style.display = '';
-                                this.updatePosition();
+                                if (this.isEditorActive()) {
+                                    this.clearLeftInlineRendering();
+                                    this.panel.style.display = '';
+                                    this.updatePosition();
+                                    this.scheduleScan();
+                                }
                             } else if (!entry.isIntersecting) {
-                                // 标签页被覆盖 → 隐藏面板
+                                this.renderedKey = '';
                                 this.panel.style.display = 'none';
                                 this.scroller.style.paddingLeft = '';
                             }
@@ -152,6 +163,14 @@ export function zipingLeftViewPlugin(
             }
 
             update(update: ViewUpdate) {
+                // CM6 不可见（阅读模式）→ 隐藏面板
+                if (!this.isEditorActive()) {
+                    this.renderedKey = '';
+                    this.panel.style.display = 'none';
+                    this.scroller.style.paddingLeft = '';
+                    return;
+                }
+
                 if (update.docChanged || update.selectionSet || update.viewportChanged) {
                     // 逆向匹配：光标落在 \t- {year}年 行 → 选中对应流年
                     if (update.selectionSet) {
@@ -173,11 +192,19 @@ export function zipingLeftViewPlugin(
             // ── 定位：贴 .view-content 左边缘，垂直居中 ──
             // IntersectionObserver 负责隐藏/显示。这里只做定位 + 推挤 scroller。
             private updatePosition() {
+                if (!this.isEditorActive()) {
+                    this.panel.style.display = 'none';
+                    this.scroller.style.paddingLeft = '';
+                    return;
+                }
                 const vc = this.view.dom.closest('.view-content') as HTMLElement | null;
                 if (!vc || !document.body.contains(this.panel)) return;
                 const r = vc.getBoundingClientRect();
                 if (r.width === 0 || r.height === 0) return; // not visible, ignore
 
+                if (this.panel.style.display === 'none') {
+                    this.panel.style.display = '';
+                }
                 this.panel.style.left = r.left + 'px';
                 // 垂直居中（最小 20px 顶部间距）
                 const ph = this.panel.offsetHeight || 200;
@@ -193,6 +220,16 @@ export function zipingLeftViewPlugin(
                 if (pw > 0) {
                     this.scroller.style.paddingLeft = pw + 'px';
                 }
+            }
+
+            // ── 检测 CM6 编辑器是否可见（非阅读模式） ──
+            private isEditorActive(): boolean {
+                const editorEl = this.view.dom;
+                if (!editorEl.isConnected) return false;
+                const sourceView = editorEl.closest('.markdown-source-view') as HTMLElement | null;
+                if (!sourceView) return false;
+                // offsetParent 为 null 时元素被隐藏（display:none）或不在布局树
+                return sourceView.offsetParent !== null;
             }
 
             // ── 逆向匹配：光标落在 \t- {year}年 行 → 搜索关联排盘码 → 触发流年选中 ──
@@ -237,7 +274,20 @@ export function zipingLeftViewPlugin(
                 this.requestId = requestAnimationFrame(() => this.scanAndRender());
             }
 
+            // ── 清除编辑器内残留的 left 内联渲染（模式切换遗留） ──
+            private clearLeftInlineRendering(): void {
+                this.view.dom.querySelectorAll('.ziping-left-inline').forEach(el => el.remove());
+            }
+
             private scanAndRender() {
+                // 清除 CM6 编辑器内可能的 left 内联渲染残留（模式切换遗留）
+                this.clearLeftInlineRendering();
+                if (!this.isEditorActive()) {
+                    this.renderedKey = '';
+                    this.panel.style.display = 'none';
+                    this.scroller.style.paddingLeft = '';
+                    return;
+                }
                 const text = this.view.state.doc.toString();
                 const blocks = findAllLeftBlocks(text);
 

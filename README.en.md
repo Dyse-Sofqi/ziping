@@ -48,6 +48,26 @@ Embed Bazi results directly in your notes:
 
 Code blocks use **Shadow DOM isolation** for consistent rendering across all themes. Supports interactive Dayun/Liunian/Liuyue selection, same as the sidebar view.
 
+### 🖼️ Left Fixed Panel (Live Preview)
+
+First line `left` renders a floating panel on the editor's left side:
+
+<pre><code>```ziping
+left
+1990.05.15-10.30-Y
+```
+</code></pre>
+
+- Transparent, borderless panel — **does not cover body text**, pushes content right
+- Reading view auto-switches to inline rendering, **no occlusion**
+- Panel auto-hides/shows when toggling Live Preview ↔ Reading mode
+
+### 🔄 Bidirectional Liunian ↔ Cursor Sync
+
+- Click liunian in panel/sidebar/code-block → cursor jumps to corresponding `\t- {year}年` line
+- Cursor on `\t- {year}年` line → all views sync-selected (panel, sidebar, code block)
+- Supports Xiaoyun (pre-Dayun years) liunian matching
+
 ### 💾 Case Management
 
 - **One-click save**: Save Bazi results as structured Markdown files
@@ -58,6 +78,7 @@ Code blocks use **Shadow DOM isolation** for consistent rendering across all the
 ### 🎛️ Interface
 
 - **Sidebar view**: Integrated in Obsidian's right sidebar, accessible anytime
+- **Left fixed panel**: Editor-attached floating panel in Live Preview
 - **Code block embedding**: Render Bazi info directly in notes
 - **Command palette**: Quick access via Obsidian command palette
 - **Ribbon icon**: One-click Bazi calculator
@@ -168,6 +189,7 @@ Male: 庚午年、辛巳月、甲子日、乙巳时
 
 | Version | Notes |
 |---------|-------|
+| 1.3.0 | CM6 ViewPlugin left panel, bidirectional liunian-cursor sync (all views), LP/Reading mode-switch adaptation, Xiaoyun liunian matching fix |
 | 1.2.9 | Add Minor Fortune (Xiaoyun) list in case markdown |
 | 1.2.8 | Add gender and Four Pillars description line in case markdown |
 | 1.2.7 | Fix code block rendering and Dayun switching logic |

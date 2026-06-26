@@ -35,6 +35,10 @@ export function findLiunianByYear(
             }
         }
     }
+    // 未在大运中找到 → 检查小运（起运前的年份）
+    if (allDayun.length > 0 && year < allDayun[0].startYear && year >= data.year) {
+        return { dayunIndex: -1, liunianIndex: year - data.year };
+    }
     return null;
 }
 
@@ -54,9 +58,9 @@ export class ZipingCodeBlockRenderer {
         );
     }
 
-    // ── 阅读模式入口：registerMarkdownCodeBlockProcessor ──
-    // Live Preview 的 left 面板由 CM6 ViewPlugin（ZipingLeftWidget.ts）处理。
-    // left 模式在此处不渲染任何内容，避免与 ViewPlugin 产生双重视图。
+    // ── 入口：registerMarkdownCodeBlockProcessor ──
+    // Live Preview 的 left 面板由 CM6 ViewPlugin 处理。
+    // 阅读模式（无 CM6）则内联渲染 left 块，不会出现 viewport 回收问题。
     async render(source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext): Promise<void> {
         const lines = source.split('\n')
             .map(l => l.trim())
@@ -67,9 +71,21 @@ export class ZipingCodeBlockRenderer {
             return;
         }
 
-        // left 模式：由 ViewPlugin 渲染为左侧浮动面板，此处跳过
         if (lines[0] === 'left') {
-            el.empty();
+            const paiPanLines = lines.slice(1);
+            if (paiPanLines.length === 0) {
+                el.createEl('p', { text: '排盘码为空' });
+                return;
+            }
+            // 检查是否在 CM6 编辑环境（Live Preview / Source Mode）
+            // 是 → ViewPlugin 处理，此处跳过
+            if (el.closest('.cm-content')) {
+                el.empty();
+                return;
+            }
+            // 阅读模式 → 内联渲染（无 viewport 回收）
+            this.renderNormalMode(el, paiPanLines);
+            el.classList.add('ziping-left-inline');
             return;
         }
 

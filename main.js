@@ -33999,14 +33999,28 @@ function zipingLeftViewPlugin(renderCodes) {
         this.updatePosition();
         const vc = view.dom.closest(".view-content");
         if (vc) {
-          this.observer = new ResizeObserver(() => this.updatePosition());
+          this.observer = new ResizeObserver(() => {
+            if (this.isEditorActive()) {
+              this.updatePosition();
+              this.scheduleScan();
+            } else {
+              this.renderedKey = "";
+              this.panel.style.display = "none";
+              this.scroller.style.paddingLeft = "";
+            }
+          });
           this.observer.observe(vc);
           this.visibilityObserver = new IntersectionObserver((entries) => {
             for (const entry of entries) {
               if (entry.isIntersecting && this.renderedKey) {
-                this.panel.style.display = "";
-                this.updatePosition();
+                if (this.isEditorActive()) {
+                  this.clearLeftInlineRendering();
+                  this.panel.style.display = "";
+                  this.updatePosition();
+                  this.scheduleScan();
+                }
               } else if (!entry.isIntersecting) {
+                this.renderedKey = "";
                 this.panel.style.display = "none";
                 this.scroller.style.paddingLeft = "";
               }
@@ -34019,6 +34033,12 @@ function zipingLeftViewPlugin(renderCodes) {
         this.scheduleScan();
       }
       update(update) {
+        if (!this.isEditorActive()) {
+          this.renderedKey = "";
+          this.panel.style.display = "none";
+          this.scroller.style.paddingLeft = "";
+          return;
+        }
         if (update.docChanged || update.selectionSet || update.viewportChanged) {
           if (update.selectionSet) {
             this.handleCursorOnYearLine();
@@ -34037,10 +34057,18 @@ function zipingLeftViewPlugin(renderCodes) {
       // ── 定位：贴 .view-content 左边缘，垂直居中 ──
       // IntersectionObserver 负责隐藏/显示。这里只做定位 + 推挤 scroller。
       updatePosition() {
+        if (!this.isEditorActive()) {
+          this.panel.style.display = "none";
+          this.scroller.style.paddingLeft = "";
+          return;
+        }
         const vc = this.view.dom.closest(".view-content");
         if (!vc || !document.body.contains(this.panel)) return;
         const r = vc.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return;
+        if (this.panel.style.display === "none") {
+          this.panel.style.display = "";
+        }
         this.panel.style.left = r.left + "px";
         const ph = this.panel.offsetHeight || 200;
         this.panel.style.top = r.top + Math.max((r.height - ph) / 2, 20) + "px";
@@ -34054,6 +34082,14 @@ function zipingLeftViewPlugin(renderCodes) {
         if (pw > 0) {
           this.scroller.style.paddingLeft = pw + "px";
         }
+      }
+      // ── 检测 CM6 编辑器是否可见（非阅读模式） ──
+      isEditorActive() {
+        const editorEl = this.view.dom;
+        if (!editorEl.isConnected) return false;
+        const sourceView = editorEl.closest(".markdown-source-view");
+        if (!sourceView) return false;
+        return sourceView.offsetParent !== null;
       }
       // ── 逆向匹配：光标落在 \t- {year}年 行 → 搜索关联排盘码 → 触发流年选中 ──
       handleCursorOnYearLine() {
@@ -34088,7 +34124,18 @@ function zipingLeftViewPlugin(renderCodes) {
         cancelAnimationFrame(this.requestId);
         this.requestId = requestAnimationFrame(() => this.scanAndRender());
       }
+      // ── 清除编辑器内残留的 left 内联渲染（模式切换遗留） ──
+      clearLeftInlineRendering() {
+        this.view.dom.querySelectorAll(".ziping-left-inline").forEach((el) => el.remove());
+      }
       scanAndRender() {
+        this.clearLeftInlineRendering();
+        if (!this.isEditorActive()) {
+          this.renderedKey = "";
+          this.panel.style.display = "none";
+          this.scroller.style.paddingLeft = "";
+          return;
+        }
         const text = this.view.state.doc.toString();
         const blocks = findAllLeftBlocks(text);
         if (blocks.length === 0) {
@@ -34182,6 +34229,9 @@ function findLiunianByYear(data, year) {
       }
     }
   }
+  if (allDayun.length > 0 && year < allDayun[0].startYear && year >= data.year) {
+    return { dayunIndex: -1, liunianIndex: year - data.year };
+  }
   return null;
 }
 var ZipingCodeBlockRenderer = class {
@@ -34194,9 +34244,9 @@ var ZipingCodeBlockRenderer = class {
       this.baziService
     );
   }
-  // ── 阅读模式入口：registerMarkdownCodeBlockProcessor ──
-  // Live Preview 的 left 面板由 CM6 ViewPlugin（ZipingLeftWidget.ts）处理。
-  // left 模式在此处不渲染任何内容，避免与 ViewPlugin 产生双重视图。
+  // ── 入口：registerMarkdownCodeBlockProcessor ──
+  // Live Preview 的 left 面板由 CM6 ViewPlugin 处理。
+  // 阅读模式（无 CM6）则内联渲染 left 块，不会出现 viewport 回收问题。
   async render(source, el, _ctx) {
     const lines = source.split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("//") && !l.startsWith("#"));
     if (lines.length === 0) {
@@ -34204,7 +34254,17 @@ var ZipingCodeBlockRenderer = class {
       return;
     }
     if (lines[0] === "left") {
-      el.empty();
+      const paiPanLines = lines.slice(1);
+      if (paiPanLines.length === 0) {
+        el.createEl("p", { text: "\u6392\u76D8\u7801\u4E3A\u7A7A" });
+        return;
+      }
+      if (el.closest(".cm-content")) {
+        el.empty();
+        return;
+      }
+      this.renderNormalMode(el, paiPanLines);
+      el.classList.add("ziping-left-inline");
       return;
     }
     this.renderNormalMode(el, lines);
