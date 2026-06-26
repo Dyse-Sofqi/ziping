@@ -1,7 +1,7 @@
 {
 	"id": "ziping",
 	"name": "Ziping",
-	"version": "1.3.0",
+	"version": "1.3.2",
 	"minAppVersion": "1.5.0",
 	"description": "子平八字排盘 — 代码块渲染、侧边栏、左侧固定面板、流年光标双向同步",
 	"author": "Sofqi",
