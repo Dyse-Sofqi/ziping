@@ -14,6 +14,7 @@ import { initializeStyleUtils } from './utils/styleUtils';
 import { IdentificationService } from './services/IdentificationService';
 import { BaziService } from './services/BaziService';
 import { ZipingCodeBlockRenderer } from './ui/ZipingCodeBlockRenderer';
+import { zipingLeftViewPlugin } from './ui/ZipingLeftWidget';
 
 export default class ZipingPlugin extends Plugin {
 		settings: ZipingSettings = DEFAULT_SETTINGS;
@@ -34,6 +35,12 @@ export default class ZipingPlugin extends Plugin {
 				void this.codeBlockRenderer.render(source, el, ctx);
 			});
 
+			// 注册 CM6 ViewPlugin：```ziping left（Live Preview 模式）
+			// ViewPlugin 在编辑器层级创建单个浮动面板，不会被 viewport 回收
+			const renderer = this.codeBlockRenderer;
+			this.registerEditorExtension(
+				zipingLeftViewPlugin((codes, parent) => renderer.renderCodesToElement(codes, parent)),
+			);
 			// 添加打开侧边栏视图的命令
 			this.addCommand({
 				id: 'open-paipan-view',
@@ -185,6 +192,7 @@ export default class ZipingPlugin extends Plugin {
 
 			// 输出 ziping 代码块
 			lines.push('```ziping');
+			lines.push('left');
 			lines.push(paiPanCode);
 			lines.push('```');
 

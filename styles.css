@@ -599,70 +599,30 @@
 }
 
 /* ══════════════════════════════════════════════════════════════ */
-/* Left mode: 排盘码-left                                        */
-/* position:fixed 在正文左侧空白区域，不占用正文空间               */
+/* CM6 ViewPlugin 面板 — Live Preview 左侧浮动视图                     */
+/* position:fixed 在 view-content 左侧水槽，不占用正文空间             */
+/* left/top/maxHeight 由 JS 根据 .view-content getBoundingClientRect 计算 */
 /* ══════════════════════════════════════════════════════════════ */
-/* 原代码块占位折叠 */
-.ziping-left-mode {
-    min-height: 0 !important;
-    height: 0 !important;
-    overflow: visible !important;
-}
 
-/* ── 固定定位面板（left/top 由 JS 在 view-content 位置计算） ── */
-.ziping-left-panel {
+.ziping-left-panel-cm {
     position: fixed;
-    left: 0;
-    top: 60px;
-    max-height: calc(100vh - 80px);
+    z-index: 2;
     overflow-y: auto;
-    z-index: 1;
-    background: transparent;
-    width: fit-content;
     max-width: 55vw;
-    padding: 0;
+    min-width: 180px;
+    background: transparent;
     display: flex;
     flex-direction: column;
 }
 
-/* ── 关闭按钮标题栏（共用） ── */
-.ziping-left-panel-header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 4px 8px;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background: var(--background-primary);
-    flex-shrink: 0;
+.ziping-left-panel-cm .ziping-left-panel-cm-content {
+    padding: 8px 4px;
 }
 
-.ziping-left-panel-close {
-    background: none;
-    border: none;
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
-    color: var(--text-muted);
-    padding: 0 6px;
-    border-radius: 4px;
-}
-
-.ziping-left-panel-close:hover {
-    color: var(--text-normal);
-    background-color: var(--background-modifier-hover);
-}
-
-.ziping-left-panel .ziping-content-wrapper {
-    padding: 8px;
-}
-
-.ziping-left-panel-hidden {
-    display: none !important;
-}
-
-/* 左面板激活时，归零 cm-editor 默认 padding */
-.view-content[data-ziping-left-panel] .cm-editor {
-    padding-left: 0 !important;
+/* 多个排盘码并列 */
+.ziping-left-panel-cm .ziping-content-wrapper {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
 }

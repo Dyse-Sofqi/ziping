@@ -3510,7 +3510,7 @@ __export(main_exports, {
   default: () => ZipingPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian7 = require("obsidian");
+var import_obsidian6 = require("obsidian");
 
 // src/settings.ts
 var import_obsidian = require("obsidian");
@@ -34155,9 +34155,6 @@ function initializeStyleUtils() {
   StyleModule.mount(document, styleModule);
 }
 
-// src/ui/ZipingCodeBlockRenderer.ts
-var import_obsidian6 = require("obsidian");
-
 // src/ui/zipingShadowStyles.ts
 var SHADOW_BAZI_CSS = `
 /* \u2500\u2500 Host: \u5F71\u5B50\u5BBF\u4E3B \u2500\u2500 */
@@ -34562,8 +34559,6 @@ var SHADOW_BAZI_CSS = `
 // src/ui/ZipingCodeBlockRenderer.ts
 var ZipingCodeBlockRenderer = class {
   constructor() {
-    // 追踪挂载到 body 的左侧面板，防止 el 复用/重建时残留
-    this.leftPanels = /* @__PURE__ */ new WeakMap();
     this.paipan = new Paipan(false);
     this.baziService = new BaziService(this.paipan);
     this.identificationService = new IdentificationService(
@@ -34572,29 +34567,28 @@ var ZipingCodeBlockRenderer = class {
       this.baziService
     );
   }
-  async render(source, el, ctx) {
-    const old = this.leftPanels.get(el);
-    if (old) {
-      this.cleanupPanel(el, old);
-    }
+  // ── 阅读模式入口：registerMarkdownCodeBlockProcessor ──
+  // Live Preview 的 left 面板由 CM6 ViewPlugin（ZipingLeftWidget.ts）处理。
+  // left 模式在此处不渲染任何内容，避免与 ViewPlugin 产生双重视图。
+  async render(source, el, _ctx) {
     const lines = source.split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("//") && !l.startsWith("#"));
     if (lines.length === 0) {
       el.createEl("p", { text: "\u6392\u76D8\u7801\u4E3A\u7A7A" });
       return;
     }
-    const isLeftMode = lines[0] === "left";
-    const paiPanLines = isLeftMode ? lines.slice(1) : lines;
-    if (paiPanLines.length === 0) {
-      el.createEl("p", { text: "\u6392\u76D8\u7801\u4E3A\u7A7A" });
+    if (lines[0] === "left") {
+      el.empty();
       return;
     }
-    if (isLeftMode) {
-      this.renderLeftMode(el, paiPanLines, ctx);
-    } else {
-      this.renderNormalMode(el, paiPanLines);
+    this.renderNormalMode(el, lines);
+  }
+  // ── CM6 ViewPlugin 调用的公开入口 ──
+  async renderCodesToElement(codes, parent) {
+    for (const code of codes) {
+      await this.renderSingleCode(code, parent);
     }
   }
-  // 普通内联渲染模式：沿用原有的 inline-flex 布局
+  // ── 内联渲染 ──
   renderNormalMode(el, lines) {
     const embedBlock = el.parentElement;
     if (embedBlock) {
@@ -34605,110 +34599,7 @@ var ZipingCodeBlockRenderer = class {
       void this.renderSingleCode(code, wrapper);
     }
   }
-  // 左侧固定排盘视图：position:fixed，位于正文左侧水槽
-  // 同时增大 view-content 的 padding-left，将正文往右推
-  // ResizeObserver 跟踪侧边栏折叠/展开时 view-content 位置变化
-  // ctx.addChild 注册 Obsidian 生命周期：切换文档 / 重新渲染时自动清理面板
-  renderLeftMode(el, lines, ctx) {
-    el.addClass("ziping-left-mode");
-    const prev = this.leftPanels.get(el);
-    if (prev) {
-      prev.remove();
-    }
-    const panel = document.body.appendChild(document.createElement("div"));
-    panel.className = "ziping-left-panel";
-    this.leftPanels.set(el, panel);
-    panel.__zipingEl = el;
-    const wrapper = panel.createDiv("ziping-content-wrapper");
-    const cleanupChild = new import_obsidian6.MarkdownRenderChild(el);
-    cleanupChild.onunload = () => {
-      this.cleanupPanel(el, panel);
-    };
-    ctx.addChild(cleanupChild);
-    let wasHidden = false;
-    let stopPolling = false;
-    const poll = () => {
-      if (stopPolling || !document.body.contains(panel)) return;
-      const isHidden = !el.isConnected || el.offsetParent === null;
-      if (isHidden && !wasHidden) {
-        panel.addClass("ziping-left-panel-hidden");
-        const vc = el.closest(".view-content");
-        if (vc) {
-          vc.style.paddingLeft = "";
-          delete vc.dataset.zipingLeftPanel;
-        }
-        wasHidden = true;
-      } else if (!isHidden && wasHidden) {
-        panel.removeClass("ziping-left-panel-hidden");
-        wasHidden = false;
-        this.positionPanel(panel);
-      }
-      requestAnimationFrame(poll);
-    };
-    requestAnimationFrame(poll);
-    panel.__zipingPollStop = () => {
-      stopPolling = true;
-    };
-    void (async () => {
-      await Promise.all(lines.map((code) => this.renderSingleCode(code, wrapper)));
-      this.positionPanel(panel);
-      const vc = document.querySelector(".workspace-split.mod-vertical.mod-root .view-content");
-      if (vc && document.body.contains(panel)) {
-        const roVc = new ResizeObserver(() => {
-          if (document.body.contains(panel)) {
-            this.positionPanel(panel);
-          } else {
-            roVc.disconnect();
-          }
-        });
-        roVc.observe(vc);
-        panel.__zipingRoVc = roVc;
-      }
-      const roPanel = new ResizeObserver(() => {
-        if (!document.body.contains(panel)) {
-          roPanel.disconnect();
-          return;
-        }
-        this.positionPanel(panel);
-      });
-      roPanel.observe(panel);
-      panel.__zipingRoPanel = roPanel;
-    })();
-  }
-  cleanupPanel(el, panel) {
-    const pollStop = panel.__zipingPollStop;
-    if (pollStop) pollStop();
-    const roVc = panel.__zipingRoVc;
-    if (roVc) roVc.disconnect();
-    const roPanel = panel.__zipingRoPanel;
-    if (roPanel) roPanel.disconnect();
-    panel.remove();
-    el.removeClass("ziping-left-mode");
-    this.leftPanels.delete(el);
-    const vc = document.querySelector(".workspace-split.mod-vertical.mod-root .view-content");
-    if (vc) {
-      vc.style.paddingLeft = "";
-      delete vc.dataset.zipingLeftPanel;
-    }
-  }
-  // 测量 el 所在 view-content 的真实 viewport 位置
-  // 使用 el.closest 而非全局 querySelector，避免选中隐藏标签页的 view-content
-  positionPanel(panel) {
-    const el = panel.__zipingEl;
-    const vc = el?.closest(".view-content");
-    if (!vc || !document.body.contains(panel)) return;
-    const rect = vc.getBoundingClientRect();
-    panel.style.left = rect.left + "px";
-    const ph = panel.offsetHeight;
-    panel.style.top = rect.top + Math.max((rect.height - ph) / 2, 20) + "px";
-    panel.style.maxHeight = rect.height - 40 + "px";
-    const pw = panel.offsetWidth;
-    if (pw > 0) {
-      vc.style.paddingLeft = pw + 8 + "px";
-    }
-    vc.dataset.zipingLeftPanel = "active";
-  }
-  // 渲染单个排盘码到指定的父容器中
+  // ── 单个排盘码渲染 ──
   async renderSingleCode(code, parent) {
     const parsed = this.identificationService.parsePaiPanCode(code);
     if (!parsed.isValid) {
@@ -34738,17 +34629,7 @@ var ZipingCodeBlockRenderer = class {
       errorEl.setText(`\u6392\u76D8\u8BA1\u7B97\u5931\u8D25: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  // 兼容旧入口：创建宿主并渲染（侧边栏等处调用）
-  renderSingleBazi(container, baziData) {
-    const embedBlock = container.parentElement;
-    if (embedBlock) {
-      embedBlock.addClass("ziping-embed-block-align");
-    }
-    const host = container.createEl("div");
-    host.addClass("ziping-bazi-block");
-    this.renderSingleBaziInto(host, baziData);
-  }
-  // 核心渲染：向已创建的宿主元素中渲染单个排盘
+  // ── 核心渲染：Shadow DOM + 组件 ──
   renderSingleBaziInto(host, baziData) {
     const shadow = host.attachShadow({ mode: "closed" });
     const sheet = new CSSStyleSheet();
@@ -34805,21 +34686,18 @@ var ZipingCodeBlockRenderer = class {
   bindCallbacks(baziData, rerender, dayunDisplay, liuyueDisplay, resultDisplay) {
     resultDisplay.setCallbacks(
       void 0,
-      // 不支持时辰调整（需要重新计算八字）
       (showHourPillar) => {
         baziData.showHourPillar = showHourPillar;
         rerender();
       }
     );
     dayunDisplay.setCallbacks(
-      // 选择大运
       (index) => {
         baziData.selectedDayunIndex = index;
         baziData.selectedLiunianIndex = 0;
         baziData.selectedLiuyueIndex = 0;
         rerender();
       },
-      // 选择流年
       (dayunIndex, liunianIndex) => {
         baziData.selectedDayunIndex = dayunIndex;
         const prevLiunianIndex = baziData.selectedLiunianIndex;
@@ -34830,14 +34708,12 @@ var ZipingCodeBlockRenderer = class {
         }
         rerender();
       },
-      // 选择小运
       () => {
         baziData.selectedDayunIndex = -1;
         baziData.selectedLiunianIndex = 0;
         baziData.selectedLiuyueIndex = 0;
         rerender();
       },
-      // 流月 checkbox
       (showLiuyue) => {
         baziData.showLiuyue = showLiuyue;
         rerender();
@@ -34852,8 +34728,144 @@ var ZipingCodeBlockRenderer = class {
   }
 };
 
+// src/ui/ZipingLeftWidget.ts
+var import_view = require("@codemirror/view");
+var ZIPING_BLOCK_RE = /```ziping\s*\n((?:.+\n)*?)```/g;
+function zipingLeftViewPlugin(renderCodes) {
+  return import_view.ViewPlugin.fromClass(
+    class {
+      constructor(view) {
+        this.view = view;
+        this.renderedKey = "";
+        this.requestId = 0;
+        this.observer = null;
+        this.panelObserver = null;
+        this.visibilityObserver = null;
+        this.scroller = view.scrollDOM;
+        this.panel = document.createElement("div");
+        this.panel.className = "ziping-left-panel-cm";
+        this.wrapper = this.panel.createDiv("ziping-left-panel-cm-content");
+        document.body.appendChild(this.panel);
+        this.updatePosition();
+        const vc = view.dom.closest(".view-content");
+        if (vc) {
+          this.observer = new ResizeObserver(() => this.updatePosition());
+          this.observer.observe(vc);
+          this.visibilityObserver = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting && this.renderedKey) {
+                this.panel.style.display = "";
+                this.updatePosition();
+              } else if (!entry.isIntersecting) {
+                this.panel.style.display = "none";
+                this.scroller.style.paddingLeft = "";
+              }
+            }
+          });
+          this.visibilityObserver.observe(vc);
+        }
+        this.panelObserver = new ResizeObserver(() => this.pushScroller());
+        this.panelObserver.observe(this.panel);
+        this.scheduleScan();
+      }
+      update(update) {
+        if (update.docChanged || update.selectionSet || update.viewportChanged) {
+          this.scheduleScan();
+        }
+      }
+      destroy() {
+        this.observer?.disconnect();
+        this.panelObserver?.disconnect();
+        this.visibilityObserver?.disconnect();
+        cancelAnimationFrame(this.requestId);
+        this.scroller.style.paddingLeft = "";
+        this.panel.remove();
+      }
+      // ── 定位：贴 .view-content 左边缘，垂直居中 ──
+      // IntersectionObserver 负责隐藏/显示。这里只做定位 + 推挤 scroller。
+      updatePosition() {
+        const vc = this.view.dom.closest(".view-content");
+        if (!vc || !document.body.contains(this.panel)) return;
+        const r = vc.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return;
+        this.panel.style.left = r.left + "px";
+        const ph = this.panel.offsetHeight || 200;
+        this.panel.style.top = r.top + Math.max((r.height - ph) / 2, 20) + "px";
+        this.panel.style.maxHeight = r.height - 40 + "px";
+        this.pushScroller();
+      }
+      // ── 将 scroller 向右推，让出面板宽度 ──
+      pushScroller() {
+        if (this.panel.style.display === "none" || !document.body.contains(this.panel)) return;
+        const pw = this.panel.offsetWidth;
+        if (pw > 0) {
+          this.scroller.style.paddingLeft = pw + "px";
+        }
+      }
+      // ── 扫描 + 渲染 ──
+      scheduleScan() {
+        cancelAnimationFrame(this.requestId);
+        this.requestId = requestAnimationFrame(() => this.scanAndRender());
+      }
+      scanAndRender() {
+        const text = this.view.state.doc.toString();
+        const blocks = findAllLeftBlocks(text);
+        if (blocks.length === 0) {
+          this.panel.style.display = "none";
+          this.scroller.style.paddingLeft = "";
+          this.renderedKey = "";
+          return;
+        }
+        const pos = this.view.state.selection.main.head;
+        const active = pickActiveBlock(blocks, pos, this.view.viewport);
+        const key = `${active.start}:${active.end}`;
+        if (key === this.renderedKey) return;
+        this.renderedKey = key;
+        this.panel.style.display = "";
+        this.wrapper.empty();
+        void renderCodes(active.codes, this.wrapper).then(() => this.updatePosition());
+      }
+    }
+  );
+}
+function findAllLeftBlocks(text) {
+  const blocks = [];
+  const re = new RegExp(ZIPING_BLOCK_RE.source, "g");
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const lines = (m[1] || "").split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("//") && !l.startsWith("#"));
+    if (lines.length === 0 || lines[0] !== "left") continue;
+    blocks.push({
+      start: m.index,
+      end: m.index + m[0].length,
+      codes: lines.slice(1)
+    });
+  }
+  return blocks;
+}
+function pickActiveBlock(blocks, cursor, viewport) {
+  const inside = blocks.find((b) => cursor >= b.start && cursor <= b.end);
+  if (inside) return inside;
+  const prev = blocks.filter((b) => b.end <= cursor).pop();
+  if (prev) return prev;
+  const vpCenter = (viewport.from + viewport.to) / 2;
+  let best = blocks[0];
+  let bestScore = Infinity;
+  for (const b of blocks) {
+    const bCenter = (b.start + b.end) / 2;
+    const dist = Math.abs(bCenter - vpCenter);
+    const inViewport = b.start <= viewport.to && b.end >= viewport.from;
+    const score = dist - (inViewport ? 1e6 : 0);
+    if (score < bestScore) {
+      bestScore = score;
+      best = b;
+    }
+  }
+  return best;
+}
+
 // src/main.ts
-var ZipingPlugin = class extends import_obsidian7.Plugin {
+var ZipingPlugin = class extends import_obsidian6.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -34866,6 +34878,10 @@ var ZipingPlugin = class extends import_obsidian7.Plugin {
     this.registerMarkdownCodeBlockProcessor("ziping", (source, el, ctx) => {
       void this.codeBlockRenderer.render(source, el, ctx);
     });
+    const renderer = this.codeBlockRenderer;
+    this.registerEditorExtension(
+      zipingLeftViewPlugin((codes, parent) => renderer.renderCodesToElement(codes, parent))
+    );
     this.addCommand({
       id: "open-paipan-view",
       name: "\u6253\u5F00\u6392\u76D8",
@@ -34927,13 +34943,13 @@ var ZipingPlugin = class extends import_obsidian7.Plugin {
       const folder = this.app.vault.getAbstractFileByPath(basePath);
       if (!folder) {
         await this.app.vault.createFolder(basePath);
-        new import_obsidian7.Notice(`\u5DF2\u521B\u5EFA\u6587\u4EF6\u5939: ${basePath}`);
+        new import_obsidian6.Notice(`\u5DF2\u521B\u5EFA\u6587\u4EF6\u5939: ${basePath}`);
       }
       const content = this.formatBaziToMarkdown(title, data);
       await this.app.vault.create(filePath, content);
-      new import_obsidian7.Notice(`\u5DF2\u4FDD\u5B58\u5230 ${filePath}`);
+      new import_obsidian6.Notice(`\u5DF2\u4FDD\u5B58\u5230 ${filePath}`);
     } catch (error) {
-      new import_obsidian7.Notice("\u4FDD\u5B58\u5931\u8D25: " + error.message);
+      new import_obsidian6.Notice("\u4FDD\u5B58\u5931\u8D25: " + error.message);
     }
   }
   formatBaziToMarkdown(title, data) {
@@ -34977,6 +34993,7 @@ var ZipingPlugin = class extends import_obsidian7.Plugin {
     lines.push(`${genderLabel}\u9020\uFF1A${yearGan}${yearZhi}\u5E74\u3001${monthGan}${monthZhi}\u6708\u3001${dayGan}${dayZhi}\u65E5\u3001${hourGan}${hourZhi}\u65F6`);
     lines.push("");
     lines.push("```ziping");
+    lines.push("left");
     lines.push(paiPanCode);
     lines.push("```");
     lines.push("");
