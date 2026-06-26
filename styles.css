@@ -619,6 +619,10 @@
     padding: 8px 4px;
 }
 
+.ziping-left-panel-cm.zp-panel-hidden {
+    display: none;
+}
+
 /* 多个排盘码并列 */
 .ziping-left-panel-cm .ziping-content-wrapper {
     display: inline-flex;

@@ -34,13 +34,22 @@ function findYearAndPaiPanCodeFromNode(node: Node | null): { year: number; paiPa
     if (!el) return null;
 
     // 找到当前光标所在的列表项
-    const li = el.closest('li');
+    let li = el.closest('li');
     if (!li) return null;
 
-    // 从 li 文本中提取年份
-    const liText = li.textContent || '';
-    const yearMatch = /- [*=_~]*(\d{4})年/.exec(liText);
-    if (!yearMatch) return null;
+    // 从 li 文本中提取年份；若不匹配则向上查找父 li（支持子节点点击）
+    let liText = li.textContent || '';
+    let yearMatch = /- [*=_~]*(\d{4})年/.exec(liText);
+    if (!yearMatch) {
+        let parent = li.parentElement?.closest('li');
+        while (parent) {
+            liText = parent.textContent || '';
+            yearMatch = /- [*=_~]*(\d{4})年/.exec(liText);
+            if (yearMatch) { li = parent; break; }
+            parent = parent.parentElement?.closest('li');
+        }
+        if (!yearMatch) return null;
+    }
     const year = parseInt(yearMatch[1], 10);
 
     // 向上搜索相邻的 li，查找 paiPanCode
@@ -129,8 +138,8 @@ export function zipingLeftViewPlugin(
                             this.scheduleScan();
                         } else {
                             this.renderedKey = '';
-                            this.panel.style.display = 'none';
-                            this.scroller.style.paddingLeft = '';
+                            this.panel.classList.add('zp-panel-hidden');
+                            this.scroller.setCssStyles({ paddingLeft: '' });
                         }
                     });
                     this.observer.observe(vc);
@@ -141,14 +150,14 @@ export function zipingLeftViewPlugin(
                             if (entry.isIntersecting && this.renderedKey) {
                                 if (this.isEditorActive()) {
                                     this.clearLeftInlineRendering();
-                                    this.panel.style.display = '';
+                                    this.panel.classList.remove('zp-panel-hidden');
                                     this.updatePosition();
                                     this.scheduleScan();
                                 }
                             } else if (!entry.isIntersecting) {
                                 this.renderedKey = '';
-                                this.panel.style.display = 'none';
-                                this.scroller.style.paddingLeft = '';
+                                this.panel.classList.add('zp-panel-hidden');
+                                this.scroller.setCssStyles({ paddingLeft: '' });
                             }
                         }
                     });
@@ -166,8 +175,8 @@ export function zipingLeftViewPlugin(
                 // CM6 不可见（阅读模式）→ 隐藏面板
                 if (!this.isEditorActive()) {
                     this.renderedKey = '';
-                    this.panel.style.display = 'none';
-                    this.scroller.style.paddingLeft = '';
+                    this.panel.classList.add('zp-panel-hidden');
+                    this.scroller.setCssStyles({ paddingLeft: '' });
                     return;
                 }
 
@@ -185,7 +194,7 @@ export function zipingLeftViewPlugin(
                 this.panelObserver?.disconnect();
                 this.visibilityObserver?.disconnect();
                 cancelAnimationFrame(this.requestId);
-                this.scroller.style.paddingLeft = '';
+                this.scroller.setCssStyles({ paddingLeft: '' });
                 this.panel.remove();
             }
 
@@ -193,8 +202,8 @@ export function zipingLeftViewPlugin(
             // IntersectionObserver 负责隐藏/显示。这里只做定位 + 推挤 scroller。
             private updatePosition() {
                 if (!this.isEditorActive()) {
-                    this.panel.style.display = 'none';
-                    this.scroller.style.paddingLeft = '';
+                    this.panel.classList.add('zp-panel-hidden');
+                    this.scroller.setCssStyles({ paddingLeft: '' });
                     return;
                 }
                 const vc = this.view.dom.closest('.view-content') as HTMLElement | null;
@@ -202,8 +211,8 @@ export function zipingLeftViewPlugin(
                 const r = vc.getBoundingClientRect();
                 if (r.width === 0 || r.height === 0) return; // not visible, ignore
 
-                if (this.panel.style.display === 'none') {
-                    this.panel.style.display = '';
+                if (this.panel.classList.contains('zp-panel-hidden')) {
+                    this.panel.classList.remove('zp-panel-hidden');
                 }
                 this.panel.style.left = r.left + 'px';
                 // 垂直居中（最小 20px 顶部间距）
@@ -215,7 +224,7 @@ export function zipingLeftViewPlugin(
 
             // ── 将 scroller 向右推，让出面板宽度 ──
             private pushScroller() {
-                if (this.panel.style.display === 'none' || !document.body.contains(this.panel)) return;
+                if (this.panel.classList.contains('zp-panel-hidden') || !document.body.contains(this.panel)) return;
                 const pw = this.panel.offsetWidth;
                 if (pw > 0) {
                     this.scroller.style.paddingLeft = pw + 'px';
@@ -236,17 +245,28 @@ export function zipingLeftViewPlugin(
             private handleCursorOnYearLine() {
                 try {
                     const pos = this.view.state.selection.main.head;
-                    const line = this.view.state.doc.lineAt(pos);
+                    const doc = this.view.state.doc;
+                    const line = doc.lineAt(pos);
                     const lineText = line.text;
 
                     // 当前行匹配 [缩进]- [*=_~]*{year}年（兼容 tab / 2+空格缩进的二级列表）
-                    const yearMatch = /(?:^\t|^ {2,})- [*=_~]*(\d{4})年/.exec(lineText);
-                    if (!yearMatch) return;
+                    let yearMatch = /(?:^\t|^ {2,}|^)- [*=_~]*(\d{4})年/.exec(lineText);
+                    let targetLine = line;
+                    // 若当前行不匹配，向上回溯最多20行，找最近匹配流年年份的行（支持子节点点击）
+                    if (!yearMatch) {
+                        for (let i = 0; i < 20; i++) {
+                            if (targetLine.number <= 1) break;
+                            targetLine = doc.line(targetLine.number - 1);
+                            yearMatch = /(?:^\t|^ {2,}|^)- [*=_~]*(\d{4})年/.exec(targetLine.text);
+                            if (yearMatch) break;
+                        }
+                        if (!yearMatch) return;
+                    }
                     const year = parseInt(yearMatch[1], 10);
 
                     // 从该行向上搜索首个 paiPanCode（同缩进风格）
-                    const text = this.view.state.doc.toString();
-                    const before = text.slice(0, line.from);
+                    const text = doc.toString();
+                    const before = text.slice(0, targetLine.from);
                     const codeRe = /(?:^\t|^ {2,})- [*=_~]*(\d{4}\.\d{2}\.\d{2}-\d{2}\.\d{2}-[YX])/gm;
                     const matches = [...before.matchAll(codeRe)];
                     if (matches.length === 0) return;
@@ -284,16 +304,16 @@ export function zipingLeftViewPlugin(
                 this.clearLeftInlineRendering();
                 if (!this.isEditorActive()) {
                     this.renderedKey = '';
-                    this.panel.style.display = 'none';
-                    this.scroller.style.paddingLeft = '';
+                    this.panel.classList.add('zp-panel-hidden');
+                    this.scroller.setCssStyles({ paddingLeft: '' });
                     return;
                 }
                 const text = this.view.state.doc.toString();
                 const blocks = findAllLeftBlocks(text);
 
                 if (blocks.length === 0) {
-                    this.panel.style.display = 'none';
-                    this.scroller.style.paddingLeft = '';
+                    this.panel.classList.add('zp-panel-hidden');
+                    this.scroller.setCssStyles({ paddingLeft: '' });
                     this.renderedKey = '';
                     return;
                 }
@@ -304,7 +324,7 @@ export function zipingLeftViewPlugin(
                 if (key === this.renderedKey) return;
 
                 this.renderedKey = key;
-                this.panel.style.display = '';
+                this.panel.classList.remove('zp-panel-hidden');
                 this.wrapper.empty();
 
                 // 捕获 paiPanCode，供流年导航回调使用

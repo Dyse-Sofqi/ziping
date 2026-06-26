@@ -33944,11 +33944,23 @@ var readingModeListenerActive = false;
 function findYearAndPaiPanCodeFromNode(node) {
   let el = node?.nodeType === 3 ? node.parentElement : node;
   if (!el) return null;
-  const li = el.closest("li");
+  let li = el.closest("li");
   if (!li) return null;
-  const liText = li.textContent || "";
-  const yearMatch = /- [*=_~]*(\d{4})年/.exec(liText);
-  if (!yearMatch) return null;
+  let liText = li.textContent || "";
+  let yearMatch = /- [*=_~]*(\d{4})年/.exec(liText);
+  if (!yearMatch) {
+    let parent = li.parentElement?.closest("li");
+    while (parent) {
+      liText = parent.textContent || "";
+      yearMatch = /- [*=_~]*(\d{4})年/.exec(liText);
+      if (yearMatch) {
+        li = parent;
+        break;
+      }
+      parent = parent.parentElement?.closest("li");
+    }
+    if (!yearMatch) return null;
+  }
   const year = parseInt(yearMatch[1], 10);
   let prev = li.previousElementSibling;
   while (prev) {
@@ -34005,8 +34017,8 @@ function zipingLeftViewPlugin(renderCodes) {
               this.scheduleScan();
             } else {
               this.renderedKey = "";
-              this.panel.style.display = "none";
-              this.scroller.style.paddingLeft = "";
+              this.panel.classList.add("zp-panel-hidden");
+              this.scroller.setCssStyles({ paddingLeft: "" });
             }
           });
           this.observer.observe(vc);
@@ -34015,14 +34027,14 @@ function zipingLeftViewPlugin(renderCodes) {
               if (entry.isIntersecting && this.renderedKey) {
                 if (this.isEditorActive()) {
                   this.clearLeftInlineRendering();
-                  this.panel.style.display = "";
+                  this.panel.classList.remove("zp-panel-hidden");
                   this.updatePosition();
                   this.scheduleScan();
                 }
               } else if (!entry.isIntersecting) {
                 this.renderedKey = "";
-                this.panel.style.display = "none";
-                this.scroller.style.paddingLeft = "";
+                this.panel.classList.add("zp-panel-hidden");
+                this.scroller.setCssStyles({ paddingLeft: "" });
               }
             }
           });
@@ -34035,8 +34047,8 @@ function zipingLeftViewPlugin(renderCodes) {
       update(update) {
         if (!this.isEditorActive()) {
           this.renderedKey = "";
-          this.panel.style.display = "none";
-          this.scroller.style.paddingLeft = "";
+          this.panel.classList.add("zp-panel-hidden");
+          this.scroller.setCssStyles({ paddingLeft: "" });
           return;
         }
         if (update.docChanged || update.selectionSet || update.viewportChanged) {
@@ -34051,23 +34063,23 @@ function zipingLeftViewPlugin(renderCodes) {
         this.panelObserver?.disconnect();
         this.visibilityObserver?.disconnect();
         cancelAnimationFrame(this.requestId);
-        this.scroller.style.paddingLeft = "";
+        this.scroller.setCssStyles({ paddingLeft: "" });
         this.panel.remove();
       }
       // ── 定位：贴 .view-content 左边缘，垂直居中 ──
       // IntersectionObserver 负责隐藏/显示。这里只做定位 + 推挤 scroller。
       updatePosition() {
         if (!this.isEditorActive()) {
-          this.panel.style.display = "none";
-          this.scroller.style.paddingLeft = "";
+          this.panel.classList.add("zp-panel-hidden");
+          this.scroller.setCssStyles({ paddingLeft: "" });
           return;
         }
         const vc = this.view.dom.closest(".view-content");
         if (!vc || !document.body.contains(this.panel)) return;
         const r = vc.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return;
-        if (this.panel.style.display === "none") {
-          this.panel.style.display = "";
+        if (this.panel.classList.contains("zp-panel-hidden")) {
+          this.panel.classList.remove("zp-panel-hidden");
         }
         this.panel.style.left = r.left + "px";
         const ph = this.panel.offsetHeight || 200;
@@ -34077,7 +34089,7 @@ function zipingLeftViewPlugin(renderCodes) {
       }
       // ── 将 scroller 向右推，让出面板宽度 ──
       pushScroller() {
-        if (this.panel.style.display === "none" || !document.body.contains(this.panel)) return;
+        if (this.panel.classList.contains("zp-panel-hidden") || !document.body.contains(this.panel)) return;
         const pw = this.panel.offsetWidth;
         if (pw > 0) {
           this.scroller.style.paddingLeft = pw + "px";
@@ -34095,13 +34107,23 @@ function zipingLeftViewPlugin(renderCodes) {
       handleCursorOnYearLine() {
         try {
           const pos = this.view.state.selection.main.head;
-          const line = this.view.state.doc.lineAt(pos);
+          const doc = this.view.state.doc;
+          const line = doc.lineAt(pos);
           const lineText = line.text;
-          const yearMatch = /(?:^\t|^ {2,})- [*=_~]*(\d{4})年/.exec(lineText);
-          if (!yearMatch) return;
+          let yearMatch = /(?:^\t|^ {2,}|^)- [*=_~]*(\d{4})年/.exec(lineText);
+          let targetLine = line;
+          if (!yearMatch) {
+            for (let i = 0; i < 20; i++) {
+              if (targetLine.number <= 1) break;
+              targetLine = doc.line(targetLine.number - 1);
+              yearMatch = /(?:^\t|^ {2,}|^)- [*=_~]*(\d{4})年/.exec(targetLine.text);
+              if (yearMatch) break;
+            }
+            if (!yearMatch) return;
+          }
           const year = parseInt(yearMatch[1], 10);
-          const text = this.view.state.doc.toString();
-          const before = text.slice(0, line.from);
+          const text = doc.toString();
+          const before = text.slice(0, targetLine.from);
           const codeRe = /(?:^\t|^ {2,})- [*=_~]*(\d{4}\.\d{2}\.\d{2}-\d{2}\.\d{2}-[YX])/gm;
           const matches = [...before.matchAll(codeRe)];
           if (matches.length === 0) return;
@@ -34132,15 +34154,15 @@ function zipingLeftViewPlugin(renderCodes) {
         this.clearLeftInlineRendering();
         if (!this.isEditorActive()) {
           this.renderedKey = "";
-          this.panel.style.display = "none";
-          this.scroller.style.paddingLeft = "";
+          this.panel.classList.add("zp-panel-hidden");
+          this.scroller.setCssStyles({ paddingLeft: "" });
           return;
         }
         const text = this.view.state.doc.toString();
         const blocks = findAllLeftBlocks(text);
         if (blocks.length === 0) {
-          this.panel.style.display = "none";
-          this.scroller.style.paddingLeft = "";
+          this.panel.classList.add("zp-panel-hidden");
+          this.scroller.setCssStyles({ paddingLeft: "" });
           this.renderedKey = "";
           return;
         }
@@ -34149,7 +34171,7 @@ function zipingLeftViewPlugin(renderCodes) {
         const key = `${active.start}:${active.end}`;
         if (key === this.renderedKey) return;
         this.renderedKey = key;
-        this.panel.style.display = "";
+        this.panel.classList.remove("zp-panel-hidden");
         this.wrapper.empty();
         const paiPanCode = active.codes[0];
         const view = this.view;
@@ -34424,6 +34446,11 @@ var ZipingCodeBlockRenderer = class {
         baziData.selectedLiunianIndex = 0;
         baziData.selectedLiuyueIndex = 0;
         rerender();
+        if (onLiunianNavigate) {
+          const dayun = baziData.dayun.allDayun[index];
+          const year = dayun?.startYear ?? baziData.year;
+          onLiunianNavigate(year);
+        }
       },
       (dayunIndex, liunianIndex) => {
         baziData.selectedDayunIndex = dayunIndex;
@@ -34751,6 +34778,56 @@ var BaziView = class extends import_obsidian5.ItemView {
     this.currentData.selectedLiunianIndex = 0;
     this.currentData.selectedLiuyueIndex = 0;
     this.refreshDisplay();
+    this.navigateToLiunianYear();
+  }
+  // 根据当前选中的大运/小运和流年索引，在文档中导航光标
+  navigateToLiunianYear() {
+    const data = this.currentData;
+    if (!data) return;
+    const dayunIndex = data.selectedDayunIndex ?? 0;
+    const liunianIndex = data.selectedLiunianIndex ?? 0;
+    let year;
+    if (dayunIndex === -1) {
+      year = data.year + liunianIndex;
+    } else {
+      const dayun = data.dayun?.allDayun?.[dayunIndex];
+      if (!dayun) return;
+      year = dayun.startYear + liunianIndex;
+    }
+    const m = String(data.month).padStart(2, "0");
+    const day = String(data.day).padStart(2, "0");
+    const h = String(data.hour).padStart(2, "0");
+    const min = String(data.minute).padStart(2, "0");
+    const g = data.gender === 0 ? "Y" : "X";
+    const paiPanCode = `${data.year}.${m}.${day}-${h}.${min}-${g}`;
+    const escapedCode = paiPanCode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const leaves = this.app.workspace.getLeavesOfType("markdown");
+    let targetEditor = null;
+    let codeEnd = 0;
+    for (const leaf of leaves) {
+      const v = leaf.view;
+      if (!(v instanceof import_obsidian5.MarkdownView)) continue;
+      const ed = v.editor;
+      const doc = ed.getValue();
+      const codePattern = `(?:\\t| {2,}|)- [*=_~]{0,4}${escapedCode}`;
+      const codeRe = new RegExp(codePattern, "g");
+      const codeMatch = codeRe.exec(doc);
+      if (!codeMatch) continue;
+      targetEditor = ed;
+      codeEnd = codeMatch.index + codeMatch[0].length;
+      const yearPattern = `(?:\\t| {2,}|)- [*=_~]{0,4}${year}\u5E74`;
+      const yearRe = new RegExp(yearPattern, "g");
+      yearRe.lastIndex = codeEnd;
+      const yearMatch = yearRe.exec(doc);
+      if (!yearMatch) continue;
+      const targetPos = yearMatch.index + yearMatch[0].length;
+      ed.setCursor(ed.offsetToPos(targetPos));
+      ed.scrollIntoView({
+        from: ed.offsetToPos(targetPos),
+        to: ed.offsetToPos(targetPos)
+      }, true);
+      return;
+    }
   }
   // 选择流年
   selectLiunian(dayunIndex, liunianIndex) {
@@ -34759,6 +34836,7 @@ var BaziView = class extends import_obsidian5.ItemView {
     this.currentData.selectedLiunianIndex = liunianIndex;
     this.currentData.selectedLiuyueIndex = 0;
     this.refreshDisplay();
+    this.navigateToLiunianYear();
   }
   // 选择小运
   selectXiaoyun() {

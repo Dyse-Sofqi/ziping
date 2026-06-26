@@ -1,5 +1,5 @@
 // 这是重构后的主视图类，只负责视图生命周期管理和组件组装
-import { ItemView, WorkspaceLeaf, Notice } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, MarkdownView, Editor } from 'obsidian';
 import { domToBlob } from 'modern-screenshot';
 import { Paipan } from '../Paipan';
 import { BaziService } from '../services/BaziService';
@@ -382,6 +382,70 @@ export class BaziView extends ItemView {
         // 切换大运时重置流月索引
         this.currentData.selectedLiuyueIndex = 0;
         this.refreshDisplay();
+
+        // 切换大运时导航光标到文档中对应年份行
+        this.navigateToLiunianYear();
+    }
+
+    // 根据当前选中的大运/小运和流年索引，在文档中导航光标
+    private navigateToLiunianYear(): void {
+        const data = this.currentData;
+        if (!data) return;
+        const dayunIndex = data.selectedDayunIndex ?? 0;
+        const liunianIndex = data.selectedLiunianIndex ?? 0;
+
+        let year: number;
+        if (dayunIndex === -1) {
+            // 小运模式
+            year = data.year + liunianIndex;
+        } else {
+            const dayun = data.dayun?.allDayun?.[dayunIndex];
+            if (!dayun) return;
+            year = dayun.startYear + liunianIndex;
+        }
+
+        // 构建 paiPanCode（与 globalCtrl.getPaiPanCode 一致）
+        const m = String(data.month).padStart(2, '0');
+        const day = String(data.day).padStart(2, '0');
+        const h = String(data.hour).padStart(2, '0');
+        const min = String(data.minute).padStart(2, '0');
+        const g = data.gender === 0 ? 'Y' : 'X';
+        const paiPanCode = `${data.year}.${m}.${day}-${h}.${min}-${g}`;
+        const escapedCode = paiPanCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // 遍历所有 Markdown 叶子页查找匹配内容（侧边栏激活时 getActiveViewOfType 会返回 null）
+        const leaves = this.app.workspace.getLeavesOfType('markdown');
+        let targetEditor: Editor | null = null;
+        let codeEnd = 0;
+        for (const leaf of leaves) {
+            const v = leaf.view;
+            if (!(v instanceof MarkdownView)) continue;
+            const ed = (v as MarkdownView).editor;
+            const doc = ed.getValue();
+            // 搜索 paiPanCode（兼容 tab/空格缩进 + md 标记）
+            const codePattern = `(?:\\t| {2,}|)- [*=_~]{0,4}${escapedCode}`;
+            const codeRe = new RegExp(codePattern, 'g');
+            const codeMatch = codeRe.exec(doc);
+            if (!codeMatch) continue;
+            targetEditor = ed;
+            codeEnd = codeMatch.index + codeMatch[0].length;
+
+            // 从匹配处向后搜索流年行（兼容一级/二级列表格式）
+            const yearPattern = `(?:\\t| {2,}|)- [*=_~]{0,4}${year}年`;
+            const yearRe = new RegExp(yearPattern, 'g');
+            yearRe.lastIndex = codeEnd;
+            const yearMatch = yearRe.exec(doc);
+            if (!yearMatch) continue;
+
+            // 光标移至行尾
+            const targetPos = yearMatch.index + yearMatch[0].length;
+            ed.setCursor(ed.offsetToPos(targetPos));
+            ed.scrollIntoView({
+                from: ed.offsetToPos(targetPos),
+                to: ed.offsetToPos(targetPos),
+            }, true);
+            return;
+        }
     }
 
     // 选择流年
@@ -391,6 +455,9 @@ export class BaziView extends ItemView {
         this.currentData.selectedLiunianIndex = liunianIndex;
         this.currentData.selectedLiuyueIndex = 0; // 切换流年时重置流月索引
         this.refreshDisplay();
+
+        // 切换流年时导航光标到文档中对应年份行
+        this.navigateToLiunianYear();
     }
 
     // 选择小运

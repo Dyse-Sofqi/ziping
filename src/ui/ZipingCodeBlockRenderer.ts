@@ -270,6 +270,13 @@ export class ZipingCodeBlockRenderer {
                 baziData.selectedLiunianIndex = 0;
                 baziData.selectedLiuyueIndex = 0;
                 rerender();
+
+                // 切换大运时也触发光标导航，使用大运首个流年
+                if (onLiunianNavigate) {
+                    const dayun = baziData.dayun.allDayun[index];
+                    const year = dayun?.startYear ?? baziData.year;
+                    onLiunianNavigate(year);
+                }
             },
             (dayunIndex: number, liunianIndex: number) => {
                 baziData.selectedDayunIndex = dayunIndex;
