@@ -380,4 +380,5 @@ export class ZipingSettingTab extends PluginSettingTab {
 			return null;
 		}
 	}
+	/* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- end electron API dynamic access */
 }
