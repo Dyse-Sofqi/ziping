@@ -60,6 +60,19 @@ export default class ZipingPlugin extends Plugin {
 			// 添加设置标签页
 			this.addSettingTab(new ZipingSettingTab(this.app, this));
 
+			// 自动跟踪文件夹重命名，同步更新案例保存路径
+			this.registerEvent(
+				this.app.vault.on('rename', (file, oldPath) => {
+					const stored = this.settings.casePath;
+					if (!stored || stored === '.' || !oldPath) return;
+					// Match exact folder or parent folder rename
+					if (stored === oldPath || stored.startsWith(oldPath + '/')) {
+						this.settings.casePath = file.path + stored.slice(oldPath.length);
+						this.saveSettings();
+					}
+				})
+			);
+
 			// 等待 workspace 完全初始化后再激活视图
 			this.app.workspace.onLayoutReady(() => {
 				// 如果不存在八字排盘视图，则在右侧侧边栏打开它

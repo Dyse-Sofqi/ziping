@@ -1,4 +1,4 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
+import {App, FileSystemAdapter, Notice, PluginSettingTab, Setting} from "obsidian";
 import ZipingPlugin from "./main";
 import cityData from "./city.json";
 
@@ -270,16 +270,114 @@ export class ZipingSettingTab extends PluginSettingTab {
 			.setHeading()
 			.setName('Paipan calendar settings');
 
-		new Setting(containerEl)
+		// Case save path — text + clear + browse, horizontal
+		const casePathSetting = new Setting(containerEl)
 			.setName('Case save path')
-			.setDesc('案例保存路径 (默认: 命例)')
-			.addText(text => text
-				.setPlaceholder('命例')
-				.setValue(this.plugin.settings.casePath)
-				.onChange(async (value) => {
-					this.plugin.settings.casePath = value || '命例';
-					await this.plugin.saveSettings();
-				}));
+			.setDesc('案例保存路径 (默认: 命例)');
 
+		// Build display path: vault-name/relative
+		const vaultName = this.getVaultName();
+		const storedPath = this.plugin.settings.casePath;
+		const displayPath = vaultName ? vaultName + '/' + storedPath : storedPath;
+
+		let textComponent: import("obsidian").TextComponent;
+		casePathSetting.addText(text => {
+			textComponent = text;
+			text.setPlaceholder('命例')
+				.setValue(displayPath)
+				.onChange(async (value) => {
+					// Strip vault prefix if user typed it
+					let relPath = value;
+					if (vaultName && relPath.startsWith(vaultName + '/')) {
+						relPath = relPath.slice(vaultName.length + 1);
+					}
+					this.plugin.settings.casePath = relPath || '命例';
+					await this.plugin.saveSettings();
+				});
+		});
+
+		casePathSetting.addExtraButton(btn => {
+			btn.setIcon('cross')
+				.setTooltip('清空')
+				.onClick(async () => {
+					const fallback = '命例';
+					const clearedDisplay = vaultName ? vaultName + '/' + fallback : fallback;
+					textComponent.setValue(clearedDisplay);
+					this.plugin.settings.casePath = fallback;
+					await this.plugin.saveSettings();
+				});
+		});
+
+		casePathSetting.addButton(btn => {
+			btn.setButtonText('浏览')
+				.onClick(async () => {
+					const selected = await this.selectFolder();
+					if (selected) {
+						const displayVal = vaultName ? vaultName + '/' + selected : selected;
+						textComponent.setValue(displayVal);
+						this.plugin.settings.casePath = selected;
+						await this.plugin.saveSettings();
+					}
+				});
+		});
+
+		casePathSetting.settingEl.addClass('ziping-setting-case-path');
+	}
+
+	private getVaultName(): string | null {
+		const adapter = this.app.vault.adapter;
+		if (adapter instanceof FileSystemAdapter) {
+			const vaultRoot = adapter.getBasePath().replace(/\\/g, '/');
+			return vaultRoot.split('/').pop() || null;
+		}
+		return null;
+	}
+
+	/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- electron API requires dynamic access */
+	private async selectFolder(): Promise<string | null> {
+		// Resolve vault root for defaultPath + path validation
+		const adapter = this.app.vault.adapter;
+		const vaultRoot = adapter instanceof FileSystemAdapter ? adapter.getBasePath().replace(/\\/g, '/') : null;
+		if (!vaultRoot) {
+			new Notice('无法获取仓库根目录');
+			return null;
+		}
+
+		const dialogOptions = {
+			properties: ['openDirectory'] as Array<string>,
+			defaultPath: vaultRoot,
+		};
+
+		// Try electronRemote (Obsidian >= 1.1)
+		try {
+			const remote = (this.app as Record<string, any>).electronRemote;
+			if (remote?.dialog) {
+				const result = await remote.dialog.showOpenDialog(dialogOptions);
+				if (result.canceled || result.filePaths.length === 0) return null;
+				const selected = result.filePaths[0].replace(/\\/g, '/');
+				if (!selected.startsWith(vaultRoot)) {
+					new Notice('路径必须在 vault 目录内');
+					return null;
+				}
+				// Return vault-relative path
+				return selected.slice(vaultRoot.length + 1) || '.';
+			}
+		} catch { /* fall through */ }
+
+		// Fallback for older Obsidian
+		try {
+			const {dialog} = (window as any).require('electron').remote;
+			const result = await dialog.showOpenDialog(dialogOptions);
+			if (result.canceled || result.filePaths.length === 0) return null;
+			const selected = result.filePaths[0].replace(/\\/g, '/');
+			if (!selected.startsWith(vaultRoot)) {
+				new Notice('路径必须在 vault 目录内');
+				return null;
+			}
+			return selected.slice(vaultRoot.length + 1) || '.';
+		} catch {
+			new Notice('无法打开文件夹选择对话框');
+			return null;
+		}
 	}
 }

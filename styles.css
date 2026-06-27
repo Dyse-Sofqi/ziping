@@ -147,10 +147,6 @@
     text-overflow: ellipsis;
 }
 
-.mod-cta {
-    margin-top: 5px;
-}
-
 .bazi-result-container .dayun-info p {
     margin: 6px 0;
 }
@@ -629,4 +625,19 @@
     flex-wrap: wrap;
     gap: 12px;
     align-items: flex-start;
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* 设置：案例保存路径 — 文本框 + 清空 + 浏览 横向排列          */
+/* ══════════════════════════════════════════════════════════════ */
+.ziping-setting-case-path .setting-item-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.ziping-setting-case-path .setting-item-control input[type="text"] {
+    flex: 1;
+    min-width: 160px;
 }

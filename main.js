@@ -29118,10 +29118,92 @@ var ZipingSettingTab = class extends import_obsidian.PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     new import_obsidian.Setting(containerEl).setHeading().setName("Paipan calendar settings");
-    new import_obsidian.Setting(containerEl).setName("Case save path").setDesc("\u6848\u4F8B\u4FDD\u5B58\u8DEF\u5F84 (\u9ED8\u8BA4: \u547D\u4F8B)").addText((text) => text.setPlaceholder("\u547D\u4F8B").setValue(this.plugin.settings.casePath).onChange(async (value) => {
-      this.plugin.settings.casePath = value || "\u547D\u4F8B";
-      await this.plugin.saveSettings();
-    }));
+    const casePathSetting = new import_obsidian.Setting(containerEl).setName("Case save path").setDesc("\u6848\u4F8B\u4FDD\u5B58\u8DEF\u5F84 (\u9ED8\u8BA4: \u547D\u4F8B)");
+    const vaultName = this.getVaultName();
+    const storedPath = this.plugin.settings.casePath;
+    const displayPath = vaultName ? vaultName + "/" + storedPath : storedPath;
+    let textComponent;
+    casePathSetting.addText((text) => {
+      textComponent = text;
+      text.setPlaceholder("\u547D\u4F8B").setValue(displayPath).onChange(async (value) => {
+        let relPath = value;
+        if (vaultName && relPath.startsWith(vaultName + "/")) {
+          relPath = relPath.slice(vaultName.length + 1);
+        }
+        this.plugin.settings.casePath = relPath || "\u547D\u4F8B";
+        await this.plugin.saveSettings();
+      });
+    });
+    casePathSetting.addExtraButton((btn) => {
+      btn.setIcon("cross").setTooltip("\u6E05\u7A7A").onClick(async () => {
+        const fallback = "\u547D\u4F8B";
+        const clearedDisplay = vaultName ? vaultName + "/" + fallback : fallback;
+        textComponent.setValue(clearedDisplay);
+        this.plugin.settings.casePath = fallback;
+        await this.plugin.saveSettings();
+      });
+    });
+    casePathSetting.addButton((btn) => {
+      btn.setButtonText("\u6D4F\u89C8").onClick(async () => {
+        const selected = await this.selectFolder();
+        if (selected) {
+          const displayVal = vaultName ? vaultName + "/" + selected : selected;
+          textComponent.setValue(displayVal);
+          this.plugin.settings.casePath = selected;
+          await this.plugin.saveSettings();
+        }
+      });
+    });
+    casePathSetting.settingEl.addClass("ziping-setting-case-path");
+  }
+  getVaultName() {
+    const adapter = this.app.vault.adapter;
+    if (adapter instanceof import_obsidian.FileSystemAdapter) {
+      const vaultRoot = adapter.getBasePath().replace(/\\/g, "/");
+      return vaultRoot.split("/").pop() || null;
+    }
+    return null;
+  }
+  /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- electron API requires dynamic access */
+  async selectFolder() {
+    const adapter = this.app.vault.adapter;
+    const vaultRoot = adapter instanceof import_obsidian.FileSystemAdapter ? adapter.getBasePath().replace(/\\/g, "/") : null;
+    if (!vaultRoot) {
+      new import_obsidian.Notice("\u65E0\u6CD5\u83B7\u53D6\u4ED3\u5E93\u6839\u76EE\u5F55");
+      return null;
+    }
+    const dialogOptions = {
+      properties: ["openDirectory"],
+      defaultPath: vaultRoot
+    };
+    try {
+      const remote = this.app.electronRemote;
+      if (remote?.dialog) {
+        const result = await remote.dialog.showOpenDialog(dialogOptions);
+        if (result.canceled || result.filePaths.length === 0) return null;
+        const selected = result.filePaths[0].replace(/\\/g, "/");
+        if (!selected.startsWith(vaultRoot)) {
+          new import_obsidian.Notice("\u8DEF\u5F84\u5FC5\u987B\u5728 vault \u76EE\u5F55\u5185");
+          return null;
+        }
+        return selected.slice(vaultRoot.length + 1) || ".";
+      }
+    } catch {
+    }
+    try {
+      const { dialog } = window.require("electron").remote;
+      const result = await dialog.showOpenDialog(dialogOptions);
+      if (result.canceled || result.filePaths.length === 0) return null;
+      const selected = result.filePaths[0].replace(/\\/g, "/");
+      if (!selected.startsWith(vaultRoot)) {
+        new import_obsidian.Notice("\u8DEF\u5F84\u5FC5\u987B\u5728 vault \u76EE\u5F55\u5185");
+        return null;
+      }
+      return selected.slice(vaultRoot.length + 1) || ".";
+    } catch {
+      new import_obsidian.Notice("\u65E0\u6CD5\u6253\u5F00\u6587\u4EF6\u5939\u9009\u62E9\u5BF9\u8BDD\u6846");
+      return null;
+    }
   }
 };
 
@@ -35230,6 +35312,16 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
       void this.activateView();
     });
     this.addSettingTab(new ZipingSettingTab(this.app, this));
+    this.registerEvent(
+      this.app.vault.on("rename", (file, oldPath) => {
+        const stored = this.settings.casePath;
+        if (!stored || stored === "." || !oldPath) return;
+        if (stored === oldPath || stored.startsWith(oldPath + "/")) {
+          this.settings.casePath = file.path + stored.slice(oldPath.length);
+          this.saveSettings();
+        }
+      })
+    );
     this.app.workspace.onLayoutReady(() => {
       if (this.app.workspace.getLeavesOfType(PAIPAN_VIEW_TYPE2).length === 0) {
         void this.activateView();
