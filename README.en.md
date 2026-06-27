@@ -189,6 +189,7 @@ Male: 庚午年、辛巳月、甲子日、乙巳时
 
 | Version | Notes |
 |---------|-------|
+| 1.4.1 | Fix: add missing eslint-enable directive after selectFolder() |
 | 1.4.0 | Settings: case path horizontal layout (text+clear+browse), native folder dialog, vault-name/relative-path display, auto-follow folder rename |
 | 1.3.2 | Fix: backward-search for liunian year line on child-node click |
 | 1.3.0 | CM6 ViewPlugin left panel, bidirectional liunian-cursor sync (all views), LP/Reading mode-switch adaptation, Xiaoyun liunian matching fix |
