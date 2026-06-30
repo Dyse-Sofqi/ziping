@@ -29205,6 +29205,7 @@ var ZipingSettingTab = class extends import_obsidian.PluginSettingTab {
       return null;
     }
   }
+  /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- end electron API dynamic access */
 };
 
 // src/ui/BaziView.ts
@@ -34087,7 +34088,7 @@ function zipingLeftViewPlugin(renderCodes) {
         this.controllers = [];
         this.scroller = view.scrollDOM;
         this.panel = document.createElement("div");
-        this.panel.className = "ziping-left-panel-cm";
+        this.panel.className = "ziping-left-panel-cm zp-panel-hidden";
         this.wrapper = this.panel.createDiv("ziping-left-panel-cm-content");
         document.body.appendChild(this.panel);
         this.updatePosition();
@@ -34161,7 +34162,7 @@ function zipingLeftViewPlugin(renderCodes) {
         const r = vc.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return;
         if (this.panel.classList.contains("zp-panel-hidden")) {
-          this.panel.classList.remove("zp-panel-hidden");
+          return;
         }
         this.panel.style.left = r.left + "px";
         const ph = this.panel.offsetHeight || 200;

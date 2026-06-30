@@ -189,6 +189,7 @@ Male: 庚午年、辛巳月、甲子日、乙巳时
 
 | Version | Notes |
 |---------|-------|
+| 1.4.2 | Fix: left panel flash on new tab open (panel briefly visible before scan hides it, causing content shift flicker) |
 | 1.4.1 | Fix: add missing eslint-enable directive after selectFolder() |
 | 1.4.0 | Settings: case path horizontal layout (text+clear+browse), native folder dialog, vault-name/relative-path display, auto-follow folder rename |
 | 1.3.2 | Fix: backward-search for liunian year line on child-node click |

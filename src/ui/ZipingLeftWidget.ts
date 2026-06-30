@@ -123,7 +123,7 @@ export function zipingLeftViewPlugin(
 
                 // 面板挂载到 body，position:fixed 在 view-content 左侧水槽
                 this.panel = document.createElement('div');
-                this.panel.className = 'ziping-left-panel-cm';
+                this.panel.className = 'ziping-left-panel-cm zp-panel-hidden';
                 this.wrapper = this.panel.createDiv('ziping-left-panel-cm-content');
                 document.body.appendChild(this.panel);
 
@@ -212,7 +212,7 @@ export function zipingLeftViewPlugin(
                 if (r.width === 0 || r.height === 0) return; // not visible, ignore
 
                 if (this.panel.classList.contains('zp-panel-hidden')) {
-                    this.panel.classList.remove('zp-panel-hidden');
+                    return;
                 }
                 this.panel.style.left = r.left + 'px';
                 // 垂直居中（最小 20px 顶部间距）
