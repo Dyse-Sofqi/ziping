@@ -35344,7 +35344,8 @@ var ZipingPlugin = class extends import_obsidian6.Plugin {
       }
       return;
     }
-    const leaf = workspace.getLeaf(false);
+    const leaf = workspace.getRightLeaf(false);
+    if (!leaf) return;
     await leaf.setViewState({ type: PAIPAN_VIEW_TYPE2, active: true });
   }
   async loadSettings() {
