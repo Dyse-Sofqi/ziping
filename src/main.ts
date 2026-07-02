@@ -103,7 +103,8 @@ export default class ZipingPlugin extends Plugin {
 			}
 
 			// 在右侧侧边栏创建新 leaf
-			const leaf = workspace.getLeaf(false);
+			const leaf = workspace.getRightLeaf(false);
+			if (!leaf) return;
 			await leaf.setViewState({ type: PAIPAN_VIEW_TYPE, active: true });
 		}
 
