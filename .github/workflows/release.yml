@@ -8,8 +8,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Gitee mirror. Set the GITEE_TOKEN secret in the GitHub repo to enable the
+      # mirror steps below; leave it unset to publish to GitHub only.
+      GITEE_REPO: sofqi/ziping
+      GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -30,3 +37,21 @@ jobs:
             main.js manifest.json styles.css \
             --title "$GITHUB_REF_NAME" \
             --generate-notes
+
+      - name: Push tag to Gitee mirror
+        if: ${{ env.GITEE_TOKEN != '' }}
+        env:
+          GITEE_PUSH_URL: https://sofqi:${{ secrets.GITEE_TOKEN }}@gitee.com/${{ env.GITEE_REPO }}.git
+        run: |
+          git push "$GITEE_PUSH_URL" "refs/tags/${GITHUB_REF_NAME}" \
+            || echo "::warning::could not push the tag to Gitee; relying on the mirror sync"
+
+      - name: Sync release to Gitee mirror
+        if: ${{ env.GITEE_TOKEN != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" --json body --jq .body > gitee-release-notes.md
+          node scripts/sync-gitee-release.mjs \
+            --tag "$GITHUB_REF_NAME" \
+            --notes-file gitee-release-notes.md
