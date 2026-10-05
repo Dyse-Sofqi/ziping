@@ -1,9 +1,8 @@
 name: Sync release to Gitee
 
-# Manual "re-sync" button for the Gitee mirror: rebuilds the artifacts of an
-# already published tag and creates/updates the matching release on
-# gitee.com/sofqi/ziping. Normal releases are mirrored automatically by
-# .github/workflows/release.yml.
+# Manual "re-sync" button for the Gitee mirror: mirrors an already published tag
+# (using the exact assets attached to the GitHub release) to gitee.com/sofqi/ziping.
+# Normal releases are mirrored automatically by .github/workflows/release.yml.
 on:
   workflow_dispatch:
     inputs:
@@ -24,22 +23,25 @@ jobs:
       GITEE_REPO: sofqi/ziping
       GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
     steps:
-      - name: Checkout the released tag
+      - name: Checkout the default branch
         uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.tag }}
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build plugin
-        run: npm run build
+      # The published assets are authoritative, and older tags predate the sync
+      # script, so download the release artifacts instead of rebuilding the tag.
+      - name: Download the published release assets
+        if: ${{ env.GITEE_TOKEN != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ inputs.tag }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir . \
+            --clobber
 
       - name: Read the GitHub release notes
         if: ${{ env.GITEE_TOKEN != '' }}
